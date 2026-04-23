@@ -101,13 +101,16 @@ const pageConfig = {
   dashboard: { title: 'Dashboard', sub: 'Visão geral do sistema' },
   users:     { title: 'Usuários',  sub: 'Gerenciar usuários do sistema' },
   pipeline:  { title: 'Pipeline',  sub: 'Funil de vendas' },
+  whatsapp:  { title: 'WhatsApp',  sub: 'Integração de mensagens' },
   settings:  { title: 'Configurações', sub: 'Preferências do sistema' },
 };
 
 function showPage(page) {
-  ['dashboard','users','pipeline','settings'].forEach(p => {
-    document.getElementById('page-' + p).style.display = p === page ? 'block' : 'none';
-    document.getElementById('nav-' + p).classList.toggle('active', p === page);
+  ['dashboard','users','pipeline','whatsapp','settings'].forEach(p => {
+    const pageEl = document.getElementById('page-' + p);
+    const navEl = document.getElementById('nav-' + p);
+    if (pageEl) pageEl.style.display = p === page ? 'block' : 'none';
+    if (navEl) navEl.classList.toggle('active', p === page);
   });
   const cfg = pageConfig[page] || {};
   document.getElementById('header-title').textContent = cfg.title || '';
