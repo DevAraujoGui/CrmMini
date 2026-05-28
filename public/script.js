@@ -105,7 +105,7 @@ async function handleRegister() {
       return;
     }
     const user = await res.json();
-    setCurrentUser(user);
+    setCurrentUser({ ...user, password });
     showToast('Conta criada com sucesso!');
     setTimeout(goToApp, 600);
   } catch (err) {
@@ -160,6 +160,9 @@ async function showPage(page) {
     await updateDashboardStats();
   }
   if (page === 'pipeline') await renderKanban();
+  if (page === 'settings') await renderSettings();
+  // Ensure the user count badge is always up-to-date
+  await updateBadge();
 }
 
 async function updateStatUsers() {
@@ -225,6 +228,62 @@ async function updateDashboardStats() {
   
   const sumClosed = document.getElementById('summary-count-closed');
   if (sumClosed) sumClosed.textContent = closedLeads;
+
+  // Update Lead Source Chart
+  const countWhatsapp = leads.filter(l => l.source === 'whatsapp').length;
+  const countInstagram = leads.filter(l => l.source === 'instagram').length;
+  const countFacebook = leads.filter(l => l.source === 'facebook').length;
+  const countOutros = leads.filter(l => l.source === 'outros' || !l.source || (l.source !== 'whatsapp' && l.source !== 'instagram' && l.source !== 'facebook')).length;
+
+  const pctWhatsapp = totalLeads > 0 ? Math.round((countWhatsapp / totalLeads) * 100) : 0;
+  const pctInstagram = totalLeads > 0 ? Math.round((countInstagram / totalLeads) * 100) : 0;
+  const pctFacebook = totalLeads > 0 ? Math.round((countFacebook / totalLeads) * 100) : 0;
+  const pctOutros = totalLeads > 0 ? Math.round((countOutros / totalLeads) * 100) : 0;
+
+  const updateElPctAndBar = (source, pct) => {
+    const pctEl = document.getElementById(`source-pct-${source}`);
+    const barEl = document.getElementById(`source-bar-${source}`);
+    if (pctEl) pctEl.textContent = `${pct}%`;
+    if (barEl) barEl.style.width = `${pct}%`;
+  };
+
+  updateElPctAndBar('whatsapp', pctWhatsapp);
+  updateElPctAndBar('instagram', pctInstagram);
+  updateElPctAndBar('facebook', pctFacebook);
+  updateElPctAndBar('outros', pctOutros);
+
+  // Update Sales Chart
+  const monthlySales = { Jan: 0, Fev: 0, Mar: 0, Abr: 0, Mai: 0 };
+  leads.filter(l => l.stage === 'closed').forEach(l => {
+    if (l.date) {
+      const m = l.date.split(' ')[0];
+      if (monthlySales[m] !== undefined) {
+        monthlySales[m] += 1;
+      }
+    }
+  });
+
+  const maxSale = Math.max(...Object.values(monthlySales), 0);
+  const maxMonth = Object.keys(monthlySales).reduce((a, b) => monthlySales[a] >= monthlySales[b] ? a : b, 'Jan');
+
+  Object.keys(monthlySales).forEach(m => {
+    const val = monthlySales[m];
+    const heightPct = maxSale > 0 ? Math.round((val / maxSale) * 100) : 0;
+    const lowerM = m.toLowerCase();
+    const bar = document.getElementById(`sales-bar-${lowerM}`);
+    if (bar) {
+      bar.style.height = `${val > 0 ? Math.max(heightPct, 8) : 0}%`;
+      bar.title = `Leads fechados em ${m}: ${val}`;
+      
+      if (val > 0 && m === maxMonth) {
+        bar.style.background = 'var(--indigo)';
+        bar.style.boxShadow = '0 4px 12px rgba(79,70,229,.2)';
+      } else {
+        bar.style.background = val > 0 ? '#c7d2fe' : '#e0e7ff';
+        bar.style.boxShadow = 'none';
+      }
+    }
+  });
 }
 
 // ============================================================
@@ -359,9 +418,21 @@ function getStageName(stage) {
 // USERS TABLE
 // ============================================================
 async function renderUsersTable() {
-  const users = await getUsers();
+  let users = [];
+  try {
+    users = await getUsers();
+  } catch (err) {
+    console.error('Failed to fetch users:', err);
+  }
   const wrap = document.getElementById('users-table-wrap');
   await updateBadge();
+  // Fallback: if DB returns empty but a logged-in user exists, show that user
+  if (users.length === 0) {
+    const current = getCurrentUser();
+    if (current) {
+      users.push({ id: current.id, name: current.name, email: current.email });
+    }
+  }
   if (users.length === 0) {
     wrap.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-users"></i></div><p style="font-weight:600;color:#4f46e5;margin:0 0 .4rem;">Nenhum usuário encontrado</p><p style="font-size:.85rem;margin:0;">Clique em "Novo Usuário" para começar.</p></div>`;
     return;
@@ -440,20 +511,16 @@ async function saveUser() {
   const email = document.getElementById('modal-email').value.trim();
   const password = document.getElementById('modal-password').value;
 
-  if (!name || !email) { showToast('Nome e e-mail são obrigatórios', 'error'); return; }
+  if (!name || !email || !password) { showToast('Nome, e-mail e senha são obrigatórios', 'error'); return; }
+  if (password.length < 6) { showToast('Senha deve ter ao menos 6 caracteres', 'error'); return; }
 
   try {
     if (id) {
       // Edit
-      const payload = { name, email };
-      if (password) {
-        if (password.length < 6) { showToast('Senha deve ter ao menos 6 caracteres', 'error'); return; }
-        payload.password = password;
-      }
       const res = await fetch(`/api/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ name, email, password })
       });
       if (!res.ok) {
         const data = await res.json();
@@ -532,29 +599,28 @@ function closeDeleteOutside(e) {
 async function confirmDelete() {
   if (!deleteTargetId || !deleteTargetType) return;
 
-  const endpoint = deleteTargetType === 'lead'
-    ? `/api/leads/${deleteTargetId}`
-    : `/api/users/${deleteTargetId}`;
+  const targetId = deleteTargetId;
+  const targetType = deleteTargetType;
+  const endpoint = targetType === 'lead'
+    ? `/api/leads/${targetId}`
+    : `/api/users/${targetId}`;
 
   try {
     const res = await fetch(endpoint, { method: 'DELETE' });
     if (!res.ok) {
-      showToast(`Erro ao excluir ${deleteTargetType === 'lead' ? 'lead' : 'usuário'}`, 'error');
+      showToast(`Erro ao excluir ${targetType === 'lead' ? 'lead' : 'usuário'}`, 'error');
       return;
     }
     closeDeleteModal();
 
-    if (deleteTargetType === 'lead') {
+    const activePage = document.querySelector('.nav-item.active').id.replace('nav-', '');
+
+    if (targetType === 'lead') {
       showToast('Lead excluído');
-      const activePage = document.querySelector('.nav-item.active').id.replace('nav-', '');
-      if (activePage === 'pipeline') await renderKanban();
-      if (activePage === 'dashboard') {
-        await updateStatUsers();
-        await updateDashboardStats();
-      }
+      await showPage(activePage);
     } else {
       const currentUser = getCurrentUser();
-      const isDeletingSelf = currentUser && currentUser.id === deleteTargetId;
+      const isDeletingSelf = currentUser && currentUser.id === targetId;
       const users = await getUsers();
       if (users.length === 0 || isDeletingSelf) {
         handleLogout();
@@ -564,7 +630,7 @@ async function confirmDelete() {
           showToast('Seu usuário foi excluído. Desconectando...', 'error');
         }
       } else {
-        await renderUsersTable();
+        await showPage(activePage);
         showToast('Usuário excluído');
       }
     }
@@ -585,12 +651,18 @@ async function openLeadModal(leadId = null) {
   document.getElementById('modal-lead-stage').value = 'new';
   
   const deleteBtn = document.getElementById('btn-delete-lead');
+  const idContainer = document.getElementById('lead-id-container');
+  const idDisplay = document.getElementById('lead-id-display');
   
   if (leadId) {
     const leads = await getLeads();
     const lead = leads.find(l => l.id === leadId);
     if (lead) {
       document.getElementById('lead-modal-title').textContent = 'Editar Lead';
+      if (idContainer && idDisplay) {
+        idContainer.style.display = 'inline-block';
+        idDisplay.textContent = lead.id;
+      }
       document.getElementById('modal-lead-name').value = lead.name;
       document.getElementById('modal-lead-company').value = lead.company;
       document.getElementById('modal-lead-value').value = lead.value;
@@ -600,6 +672,7 @@ async function openLeadModal(leadId = null) {
     }
   } else {
     document.getElementById('lead-modal-title').textContent = 'Novo Lead';
+    if (idContainer) idContainer.style.display = 'none';
     if (deleteBtn) deleteBtn.style.display = 'none';
   }
   document.getElementById('lead-modal').style.display = 'flex';
@@ -706,9 +779,286 @@ document.addEventListener('keydown', e => {
 });
 
 // ============================================================
+// SETTINGS
+// ============================================================
+function toggleTheme() {
+  const checkbox = document.getElementById('theme-toggle');
+  const isDark = checkbox.checked;
+  if (isDark) {
+    document.body.classList.add('dark-mode');
+    localStorage.setItem('crmini_theme', 'dark');
+    document.getElementById('theme-status-text').textContent = 'Ativado';
+  } else {
+    document.body.classList.remove('dark-mode');
+    localStorage.setItem('crmini_theme', 'light');
+    document.getElementById('theme-status-text').textContent = 'Desativado';
+  }
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('crmini_theme') || 'light';
+  const checkbox = document.getElementById('theme-toggle');
+  const statusText = document.getElementById('theme-status-text');
+  
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+    if (checkbox) checkbox.checked = true;
+    if (statusText) statusText.textContent = 'Ativado';
+  } else {
+    document.body.classList.remove('dark-mode');
+    if (checkbox) checkbox.checked = false;
+    if (statusText) statusText.textContent = 'Desativado';
+  }
+}
+
+async function renderSettings() {
+  const user = getCurrentUser();
+  if (!user) return;
+  
+  // Checkboxes
+  initTheme();
+  
+  // Database Health Check
+  const dbStatusEl = document.getElementById('settings-db-status');
+  try {
+    const res = await fetch('/api/health');
+    if (res.ok) {
+      const health = await res.json();
+      if (health.database === 'connected') {
+        dbStatusEl.innerHTML = `<i class="fa-solid fa-circle" style="font-size:0.75rem; margin-right:4px;"></i> SQLite Conectado`;
+        dbStatusEl.style.color = 'var(--success)';
+      } else {
+        dbStatusEl.innerHTML = `<i class="fa-solid fa-circle-exclamation" style="font-size:0.75rem; margin-right:4px;"></i> SQLite Erro Interno`;
+        dbStatusEl.style.color = 'var(--danger)';
+      }
+    } else {
+      dbStatusEl.innerHTML = `<i class="fa-solid fa-circle-exclamation" style="font-size:0.75rem; margin-right:4px;"></i> SQLite Desconectado`;
+      dbStatusEl.style.color = 'var(--danger)';
+    }
+  } catch (err) {
+    dbStatusEl.innerHTML = `<i class="fa-solid fa-circle-exclamation" style="font-size:0.75rem; margin-right:4px;"></i> SQLite Desconectado`;
+    dbStatusEl.style.color = 'var(--danger)';
+  }
+  
+  // System Stats
+  try {
+    const leads = await getLeads();
+    const users = await getUsers();
+    
+    let totalValue = 0;
+    leads.forEach(l => {
+      totalValue += parseFloat(l.value) || 0;
+    });
+    
+    document.getElementById('settings-stat-leads').textContent = `${leads.length} Lead${leads.length === 1 ? '' : 's'}`;
+    document.getElementById('settings-stat-users').textContent = `${users.length} Usuário${users.length === 1 ? '' : 's'}`;
+    document.getElementById('settings-stat-value').textContent = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+  } catch (err) {
+    console.error('Error fetching statistics for settings:', err);
+  }
+}
+
+async function saveProfileSettings() {
+  const name = document.getElementById('settings-user-name').value.trim();
+  const email = document.getElementById('settings-user-email').value.trim();
+  
+  if (!name || !email) {
+    showToast('Nome completo e E-mail são obrigatórios', 'error');
+    return;
+  }
+  
+  const user = getCurrentUser();
+  if (!user) return;
+  
+  const password = user.password;
+  if (!password) {
+    showToast('Erro interno: Senha de confirmação indisponível na sessão. Por favor, refaça o login.', 'error');
+    return;
+  }
+  
+  try {
+    const res = await fetch(`/api/users/${user.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      showToast(data.error || 'Erro ao salvar alterações do perfil', 'error');
+      return;
+    }
+    
+    // Update local session
+    const updatedUser = { ...user, name, email };
+    setCurrentUser(updatedUser);
+    
+    // Update Sidebar elements
+    document.getElementById('sidebar-name').textContent = name.split(' ')[0];
+    document.getElementById('sidebar-avatar').textContent = name.charAt(0).toUpperCase();
+    
+    showToast('Perfil atualizado com sucesso!');
+    await renderSettings();
+  } catch (err) {
+    showToast('Erro ao conectar com o servidor', 'error');
+  }
+}
+
+async function savePasswordSettings() {
+  const currentPw = document.getElementById('settings-user-password-current').value;
+  const newPw = document.getElementById('settings-user-password-new').value;
+  const confirmPw = document.getElementById('settings-user-password-confirm').value;
+  
+  if (!currentPw || !newPw || !confirmPw) {
+    showToast('Preencha todos os campos de senha', 'error');
+    return;
+  }
+  
+  if (newPw.length < 6) {
+    showToast('A nova senha deve ter no mínimo 6 caracteres', 'error');
+    return;
+  }
+  
+  if (newPw !== confirmPw) {
+    showToast('A nova senha e a confirmação não coincidem', 'error');
+    return;
+  }
+  
+  const user = getCurrentUser();
+  if (!user) return;
+  
+  if (currentPw !== user.password) {
+    showToast('A senha atual digitada está incorreta', 'error');
+    return;
+  }
+  
+  try {
+    const res = await fetch(`/api/users/${user.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: user.name, email: user.email, password: newPw })
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      showToast(data.error || 'Erro ao atualizar a senha', 'error');
+      return;
+    }
+    
+    // Update local session
+    const updatedUser = { ...user, password: newPw };
+    setCurrentUser(updatedUser);
+    
+    // Clear inputs
+    document.getElementById('settings-user-password-current').value = '';
+    document.getElementById('settings-user-password-new').value = '';
+    document.getElementById('settings-user-password-confirm').value = '';
+    
+    showToast('Senha atualizada com sucesso!');
+  } catch (err) {
+    showToast('Erro de conexão com o servidor', 'error');
+  }
+}
+
+async function exportData() {
+  try {
+    const leads = await getLeads();
+    const users = await getUsers();
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ leads, users, exportedAt: new Date().toISOString() }, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `crmini-backup-${new Date().toISOString().slice(0,10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast('Dados exportados com sucesso!');
+  } catch (err) {
+    showToast('Erro ao exportar dados', 'error');
+  }
+}
+
+async function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.leads || !data.users) {
+        showToast('Formato de backup inválido!', 'error');
+        return;
+      }
+      
+      showToast('Importando dados, aguarde...');
+      
+      // Fetch existing items for comparison
+      const existingLeads = await getLeads();
+      const existingUsers = await getUsers();
+      
+      const existingLeadsMap = new Map(existingLeads.map(l => [l.id, l]));
+      const existingUsersMap = new Map(existingUsers.map(u => [u.id, u]));
+      
+      // Import Users
+      for (const u of data.users) {
+        const hasUser = existingUsersMap.has(u.id);
+        const payload = {
+          name: u.name,
+          email: u.email,
+          password: u.password || '123456' // Fallback safe password
+        };
+        
+        const method = hasUser ? 'PUT' : 'POST';
+        const url = hasUser ? `/api/users/${u.id}` : '/api/users';
+        
+        await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(hasUser ? payload : { id: u.id, ...payload })
+        });
+      }
+      
+      // Import Leads
+      for (const l of data.leads) {
+        const hasLead = existingLeadsMap.has(l.id);
+        const payload = {
+          name: l.name,
+          company: l.company,
+          value: parseFloat(l.value) || 0,
+          source: l.source || 'outros',
+          stage: l.stage || 'new',
+          date: l.date || formatCurrentDate()
+        };
+        
+        const method = hasLead ? 'PUT' : 'POST';
+        const url = hasLead ? `/api/leads/${l.id}` : '/api/leads';
+        
+        await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(hasLead ? payload : { id: l.id, ...payload })
+        });
+      }
+      
+      showToast('Importação concluída com sucesso!');
+      
+      // Reload stats and sidebar
+      await renderSettings();
+      await updateBadge();
+    } catch (err) {
+      console.error(err);
+      showToast('Erro ao ler ou processar arquivo', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============================================================
 // INIT
 // ============================================================
 (async function init() {
+  initTheme(); // Apply dark mode if preferred
   const user = getCurrentUser();
   if (user) {
     // Validate that the user session is still active/valid in backend

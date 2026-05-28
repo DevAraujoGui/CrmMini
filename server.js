@@ -178,7 +178,14 @@ app.put('/api/users/:id', (req, res) => {
   const { id } = req.params;
   const { name, email, password } = req.body;
   
-  if (password) {
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios (name, email, password)' });
+  }
+
+  db.get('SELECT id FROM users WHERE id = ?', [id], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!row) return res.status(404).json({ error: 'Usuário não encontrado' });
+
     db.run(
       'UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?',
       [name, email, password, id],
@@ -187,16 +194,7 @@ app.put('/api/users/:id', (req, res) => {
         res.json({ message: 'User updated successfully' });
       }
     );
-  } else {
-    db.run(
-      'UPDATE users SET name = ?, email = ? WHERE id = ?',
-      [name, email, id],
-      function (err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: 'User updated successfully' });
-      }
-    );
-  }
+  });
 });
 
 app.delete('/api/users/:id', (req, res) => {
@@ -248,16 +246,25 @@ app.put('/api/leads/:id', (req, res) => {
   const { id } = req.params;
   const { name, company, value, source, stage } = req.body;
   
-  db.run(
-    'UPDATE leads SET name = ?, company = ?, value = ?, source = ?, stage = ? WHERE id = ?',
-    [name, company, value, source, stage, id],
-    function (err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
+  if (!name || !company || value === undefined || !source || !stage) {
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios (name, company, value, source, stage)' });
+  }
+
+  db.get('SELECT id FROM leads WHERE id = ?', [id], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!row) return res.status(404).json({ error: 'Lead não encontrado' });
+
+    db.run(
+      'UPDATE leads SET name = ?, company = ?, value = ?, source = ?, stage = ? WHERE id = ?',
+      [name, company, value, source, stage, id],
+      function (err) {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        res.json({ message: 'Lead updated successfully' });
       }
-      res.json({ message: 'Lead updated successfully' });
-    }
-  );
+    );
+  });
 });
 
 app.delete('/api/leads/:id', (req, res) => {
@@ -270,6 +277,18 @@ app.delete('/api/leads/:id', (req, res) => {
       return res.status(404).json({ error: 'Lead não encontrado' });
     }
     res.json({ message: 'Lead deleted successfully' });
+  });
+});
+
+// ============================================================
+// SYSTEM HEALTH CHECK API
+// ============================================================
+app.get('/api/health', (req, res) => {
+  db.get('SELECT 1', [], (err) => {
+    if (err) {
+      return res.status(500).json({ status: 'error', database: 'disconnected', error: err.message });
+    }
+    res.json({ status: 'ok', database: 'connected' });
   });
 });
 

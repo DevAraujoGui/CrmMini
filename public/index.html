@@ -185,23 +185,23 @@
               <div class="card-body">
                 <div style="display:flex; align-items:flex-end; gap: .75rem; height: 180px; padding-top: 1rem;">
                   <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:.5rem;">
-                    <div style="width:100%; background:#e0e7ff; border-radius:4px; height:40%; transition:height .3s;"></div>
+                    <div id="sales-bar-jan" style="width:100%; background:#e0e7ff; border-radius:4px; height:0%; transition:height .3s;"></div>
                     <span style="font-size:.7rem; color:var(--muted); font-weight:600;">Jan</span>
                   </div>
                   <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:.5rem;">
-                    <div style="width:100%; background:#c7d2fe; border-radius:4px; height:65%; transition:height .3s;"></div>
+                    <div id="sales-bar-fev" style="width:100%; background:#e0e7ff; border-radius:4px; height:0%; transition:height .3s;"></div>
                     <span style="font-size:.7rem; color:var(--muted); font-weight:600;">Fev</span>
                   </div>
                   <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:.5rem;">
-                    <div style="width:100%; background:var(--indigo); border-radius:4px; height:90%; transition:height .3s; box-shadow: 0 4px 12px rgba(79,70,229,.2);"></div>
-                    <span style="font-size:.7rem; color:var(--indigo); font-weight:700;">Mar</span>
+                    <div id="sales-bar-mar" style="width:100%; background:#e0e7ff; border-radius:4px; height:0%; transition:height .3s;"></div>
+                    <span style="font-size:.7rem; color:var(--muted); font-weight:600;">Mar</span>
                   </div>
                   <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:.5rem;">
-                    <div style="width:100%; background:#e0e7ff; border-radius:4px; height:30%; transition:height .3s;"></div>
+                    <div id="sales-bar-abr" style="width:100%; background:#e0e7ff; border-radius:4px; height:0%; transition:height .3s;"></div>
                     <span style="font-size:.7rem; color:var(--muted); font-weight:600;">Abr</span>
                   </div>
                   <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:.5rem;">
-                    <div style="width:100%; background:#e0e7ff; border-radius:4px; height:50%; transition:height .3s;"></div>
+                    <div id="sales-bar-mai" style="width:100%; background:#e0e7ff; border-radius:4px; height:0%; transition:height .3s;"></div>
                     <span style="font-size:.7rem; color:var(--muted); font-weight:600;">Mai</span>
                   </div>
                 </div>
@@ -218,28 +218,37 @@
                   <div>
                     <div style="display:flex; justify-content:space-between; font-size:.8rem; margin-bottom:6px;">
                       <span style="font-weight:600; color:var(--text);">WhatsApp</span>
-                      <span style="color:var(--muted);">45%</span>
+                      <span style="color:var(--muted);" id="source-pct-whatsapp">0%</span>
                     </div>
                     <div style="width:100%; height:8px; background:#f3f4f6; border-radius:99px; overflow:hidden;">
-                      <div style="width:45%; height:100%; background:#25d366; border-radius:99px;"></div>
+                      <div id="source-bar-whatsapp" style="width:0%; height:100%; background:#25d366; border-radius:99px;"></div>
                     </div>
                   </div>
                   <div>
                     <div style="display:flex; justify-content:space-between; font-size:.8rem; margin-bottom:6px;">
                       <span style="font-weight:600; color:var(--text);">Instagram</span>
-                      <span style="color:var(--muted);">30%</span>
+                      <span style="color:var(--muted);" id="source-pct-instagram">0%</span>
                     </div>
                     <div style="width:100%; height:8px; background:#f3f4f6; border-radius:99px; overflow:hidden;">
-                      <div style="width:30%; height:100%; background:#e1306c; border-radius:99px;"></div>
+                      <div id="source-bar-instagram" style="width:0%; height:100%; background:#e1306c; border-radius:99px;"></div>
                     </div>
                   </div>
                   <div>
                     <div style="display:flex; justify-content:space-between; font-size:.8rem; margin-bottom:6px;">
                       <span style="font-weight:600; color:var(--text);">Facebook</span>
-                      <span style="color:var(--muted);">15%</span>
+                      <span style="color:var(--muted);" id="source-pct-facebook">0%</span>
                     </div>
                     <div style="width:100%; height:8px; background:#f3f4f6; border-radius:99px; overflow:hidden;">
-                      <div style="width:15%; height:100%; background:#1877f2; border-radius:99px;"></div>
+                      <div id="source-bar-facebook" style="width:0%; height:100%; background:#1877f2; border-radius:99px;"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="display:flex; justify-content:space-between; font-size:.8rem; margin-bottom:6px;">
+                      <span style="font-weight:600; color:var(--text);">Outros</span>
+                      <span style="color:var(--muted);" id="source-pct-outros">0%</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:#f3f4f6; border-radius:99px; overflow:hidden;">
+                      <div id="source-bar-outros" style="width:0%; height:100%; background:#8b5cf6; border-radius:99px;"></div>
                     </div>
                   </div>
                 </div>
@@ -356,15 +365,85 @@
 
         <!-- SETTINGS -->
         <div id="page-settings" class="fade-section" style="display:none;">
-          <div class="card">
-            <div class="card-header"><h2>Configurações</h2></div>
-            <div class="card-body">
-              <div class="empty-state">
-                <div class="empty-icon"><i class="fa-solid fa-gear"></i></div>
-                <p style="font-weight:600;color:#4f46e5;margin:0 0 .4rem;">Configurações em breve</p>
-                <p style="font-size:.85rem;margin:0;">Opções de personalização estarão disponíveis em breve.</p>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+            
+            <!-- Tema & Aparência -->
+            <div class="card">
+              <div class="card-header">
+                <h2><i class="fa-solid fa-palette" style="color: var(--indigo); margin-right: 8px;"></i> Aparência</h2>
+              </div>
+              <div class="card-body" style="display:flex; flex-direction:column; gap:1.25rem;">
+                <p style="font-size: 0.85rem; color: var(--muted); margin: 0;">Personalize o tema visual da aplicação.</p>
+                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--table-header); padding:1rem; border-radius:12px; border:1px solid var(--border);">
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div style="font-size:1.5rem; color: var(--indigo);"><i class="fa-solid fa-circle-half-stroke"></i></div>
+                    <div>
+                      <p style="margin:0; font-size:0.9rem; font-weight:600; color:var(--text);">Modo Escuro</p>
+                      <p style="margin:0; font-size:0.75rem; color:var(--muted);" id="theme-status-text">Desativado</p>
+                    </div>
+                  </div>
+                  <!-- Switch Toggle -->
+                  <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                    <input type="checkbox" id="theme-toggle" onchange="toggleTheme()" style="opacity: 0; width: 0; height: 0;">
+                    <span class="slider" style="position: absolute; cursor: pointer; inset: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px;"></span>
+                  </label>
+                </div>
+                <style>
+                  .switch input:checked + .slider { background-color: var(--indigo); }
+                  .switch input:focus + .slider { box-shadow: 0 0 1px var(--indigo); }
+                  .switch .slider:before {
+                    position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px;
+                    background-color: white; transition: .4s; border-radius: 50%;
+                  }
+                  .switch input:checked + .slider:before { transform: translateX(24px); }
+                </style>
               </div>
             </div>
+
+            <!-- Backup & Dados -->
+            <div class="card">
+              <div class="card-header">
+                <h2><i class="fa-solid fa-database" style="color: var(--indigo); margin-right: 8px;"></i> Gerenciamento de Dados</h2>
+              </div>
+              <div class="card-body" style="display:flex; flex-direction:column; gap:1rem;">
+                <p style="font-size: 0.85rem; color: var(--muted); margin: 0;">Exporte seus dados do CRMini para backup ou importe a partir de um arquivo JSON.</p>
+                <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+                  <button class="btn-primary" onclick="exportData()" style="flex:1; background:linear-gradient(135deg,#10b981,#059669); box-shadow:0 4px 14px rgba(16,185,129,0.35);">
+                    <i class="fa-solid fa-download"></i> Exportar JSON
+                  </button>
+                  <label class="btn-primary" style="flex:1; text-align:center; background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 4px 14px rgba(245,158,11,0.35); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    <i class="fa-solid fa-upload"></i> Importar JSON
+                    <input type="file" id="import-file-input" onchange="importData(event)" accept=".json" style="display:none;" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Informações do Sistema -->
+            <div class="card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <h2><i class="fa-solid fa-circle-info" style="color: var(--indigo); margin-right: 8px;"></i> Status do Sistema</h2>
+              </div>
+              <div class="card-body" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.25rem;">
+                <div style="background:var(--table-header); padding:1rem; border-radius:12px; border:1px solid var(--border);">
+                  <p style="margin:0; font-size:0.75rem; color:var(--muted); font-weight:600; text-transform:uppercase;">Banco de Dados</p>
+                  <p style="margin:6px 0 0; font-size:1.15rem; font-weight:700; color:var(--success);" id="settings-db-status"><i class="fa-solid fa-circle" style="font-size:0.75rem; margin-right:4px;"></i> SQLite Conectado</p>
+                </div>
+                <div style="background:var(--table-header); padding:1rem; border-radius:12px; border:1px solid var(--border);">
+                  <p style="margin:0; font-size:0.75rem; color:var(--muted); font-weight:600; text-transform:uppercase;">Total de Leads</p>
+                  <p style="margin:6px 0 0; font-size:1.15rem; font-weight:700; color:var(--text);" id="settings-stat-leads">0 Leads</p>
+                </div>
+                <div style="background:var(--table-header); padding:1rem; border-radius:12px; border:1px solid var(--border);">
+                  <p style="margin:0; font-size:0.75rem; color:var(--muted); font-weight:600; text-transform:uppercase;">Total de Usuários</p>
+                  <p style="margin:6px 0 0; font-size:1.15rem; font-weight:700; color:var(--text);" id="settings-stat-users">0 Usuários</p>
+                </div>
+                <div style="background:var(--table-header); padding:1rem; border-radius:12px; border:1px solid var(--border);">
+                  <p style="margin:0; font-size:0.75rem; color:var(--muted); font-weight:600; text-transform:uppercase;">Valor no Funil</p>
+                  <p style="margin:6px 0 0; font-size:1.15rem; font-weight:700; color:var(--text);" id="settings-stat-value">R$ 0</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -390,7 +469,7 @@
       <label>Senha</label>
       <input type="password" id="modal-password" placeholder="Mínimo 6 caracteres" />
     </div>
-    <p id="modal-pw-hint" style="font-size:.75rem;color:#6b7280;margin:.3rem 0 0;">Deixe em branco para manter a senha atual (ao editar)</p>
+    <p id="modal-pw-hint" style="font-size:.75rem;color:#ef4444;margin:.3rem 0 0;">A senha é obrigatória para salvar as alterações</p>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeUserModal()">Cancelar</button>
       <button class="btn-confirm" onclick="saveUser()">Salvar</button>
@@ -416,6 +495,9 @@
   <div class="modal">
     <h3 id="lead-modal-title">Novo Lead</h3>
     <input type="hidden" id="modal-lead-id" />
+    <div id="lead-id-container" style="display:none; font-size:.8rem; color:var(--muted); margin-bottom:.75rem; font-family:'JetBrains Mono', monospace; background:#f3f4f6; padding:4px 8px; border-radius:6px; display:inline-block; border: 1px solid var(--border);">
+      ID: <span id="lead-id-display" style="font-weight:600; color:var(--text);"></span>
+    </div>
     <div class="field" style="margin-bottom:.9rem;">
       <label>Nome do Lead</label>
       <input type="text" id="modal-lead-name" placeholder="Ex: João Silva" />

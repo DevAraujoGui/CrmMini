@@ -17,9 +17,22 @@ code, .mono { font-family: 'JetBrains Mono', monospace; }
   --danger: #ef4444;
   --danger-light: #fee2e2;
   --success: #10b981;
+  --table-header: #f8f8ff;
+  --table-hover: #fafaff;
 }
 
-body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; }
+body.dark-mode {
+  --bg: #0b0f19;
+  --surface: #111827;
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --border: #1f2937;
+  --indigo-subtle: #1e1b4b;
+  --table-header: #1f2937;
+  --table-hover: #1e293b;
+}
+
+body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; transition: background 0.3s, color 0.3s; }
 
 /* Auth */
 .auth-bg {
@@ -129,7 +142,7 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; 
 
 /* Header */
 #header {
-  background: white; padding: .9rem 1.75rem;
+  background: var(--surface); padding: .9rem 1.75rem;
   display: flex; align-items: center; justify-content: space-between;
   border-bottom: 1.5px solid var(--border);
   position: sticky; top: 0; z-index: 50;
@@ -138,7 +151,7 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; 
 .btn-logout {
   display:flex; align-items:center; gap:.5rem;
   padding: .5rem .9rem; border-radius: 9px;
-  border: 1.5px solid var(--border); background: white;
+  border: 1.5px solid var(--border); background: var(--surface);
   color: var(--muted); font-size: .85rem; font-weight: 600;
   cursor: pointer; transition: all .2s;
 }
@@ -149,7 +162,7 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; 
 
 /* Cards */
 .card {
-  background: white; border-radius: 16px;
+  background: var(--surface); border-radius: 16px;
   border: 1.5px solid var(--border);
   box-shadow: 0 2px 12px rgba(79,70,229,.06);
 }
@@ -159,7 +172,7 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; 
 
 /* Stats */
 .stat-card {
-  background: white; border-radius: 14px;
+  background: var(--surface); border-radius: 14px;
   border: 1.5px solid var(--border);
   padding: 1.1rem 1.3rem;
   box-shadow: 0 2px 10px rgba(79,70,229,.05);
@@ -173,13 +186,13 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; 
 .data-table th { 
   font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
   color:var(--muted); padding:.7rem 1rem; text-align:left;
-  background: #f8f8ff; border-bottom: 1.5px solid var(--border);
+  background: var(--table-header); border-bottom: 1.5px solid var(--border);
 }
 .data-table th:first-child { border-radius: 10px 0 0 0; }
 .data-table th:last-child  { border-radius: 0 10px 0 0; }
-.data-table td { padding: .85rem 1rem; font-size: .9rem; border-bottom: 1px solid #f1f0fb; vertical-align: middle; }
+.data-table td { padding: .85rem 1rem; font-size: .9rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: #fafaff; }
+.data-table tr:hover td { background: var(--table-hover); }
 .user-avatar-sm {
   width:34px; height:34px; border-radius:9px;
   background: linear-gradient(135deg,var(--indigo),var(--indigo-light));
@@ -216,14 +229,14 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; 
 }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 .modal {
-  background: white; border-radius: 18px;
+  background: var(--surface); border-radius: 18px;
   padding: 2rem; width: 100%; max-width: 420px;
   box-shadow: 0 30px 70px rgba(0,0,0,.2);
   animation: slideUp .25s ease;
 }
 .modal h3 { font-size: 1.1rem; font-weight: 700; margin: 0 0 1.25rem; color: var(--text); }
 .modal-footer { display:flex; gap:.75rem; justify-content:flex-end; margin-top:1.5rem; }
-.btn-cancel { padding:.6rem 1.1rem; border-radius:9px; border:1.5px solid var(--border); background:white; color:var(--muted); font-size:.88rem; font-weight:600; cursor:pointer; transition:background .18s; }
+.btn-cancel { padding:.6rem 1.1rem; border-radius:9px; border:1.5px solid var(--border); background:var(--surface); color:var(--muted); font-size:.88rem; font-weight:600; cursor:pointer; transition:background .18s; }
 .btn-cancel:hover { background: #f5f5f9; }
 .btn-confirm { padding:.6rem 1.1rem; border-radius:9px; border:none; background:var(--indigo); color:white; font-size:.88rem; font-weight:600; cursor:pointer; transition:opacity .18s; }
 .btn-confirm:hover { opacity:.88; }
@@ -255,7 +268,7 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; 
 }
 
 .kanban-column {
-  background: #f8f8ff;
+  background: var(--table-header);
   border-radius: 12px;
   width: 320px;
   min-width: 320px;
@@ -299,7 +312,7 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; margin: 0; 
 
 /* Kanban Card */
 .kanban-card {
-  background: white;
+  background: var(--surface);
   border-radius: 12px;
   padding: 1.25rem;
   box-shadow: 0 2px 8px rgba(79,70,229,.04);
