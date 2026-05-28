@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRMini API - Swagger Interativo</title>
+  <link rel="icon" type="image/png" href="assets/Logos/Icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #3730a3;
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --get: #10b981;
+      --post: #3b82f6;
+      --put: #f59e0b;
+      --delete: #ef4444;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: 'Sora', sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #0b0f19 100%);
+      padding: 2.5rem 2rem;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .header-logo img {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+    }
+    .header-logo h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .header-logo h1 span {
+      color: var(--primary-light);
+    }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .back-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary-light);
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+    }
+    main {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    .description-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .description-card p {
+      margin: 0 0 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .description-card code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--primary-light);
+      font-size: 0.85rem;
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 2.5rem 0 1rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border-bottom: 1.5px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+    .section-title i {
+      color: var(--primary-light);
+    }
+    .endpoint-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .endpoint-card:hover {
+      border-color: #374151;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    .endpoint-header {
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .method-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 80px;
+      text-align: center;
+    }
+    .method-badge.get { background: rgba(16, 185, 129, 0.15); color: var(--get); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .method-badge.post { background: rgba(59, 130, 246, 0.15); color: var(--post); border: 1px solid rgba(59, 130, 246, 0.3); }
+    .method-badge.put { background: rgba(245, 158, 11, 0.15); color: var(--put); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .method-badge.delete { background: rgba(239, 68, 68, 0.15); color: var(--delete); border: 1px solid rgba(239, 68, 68, 0.3); }
+    
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #e5e7eb;
+    }
+    .endpoint-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+    .endpoint-chevron {
+      color: var(--muted);
+      transition: transform 0.2s;
+    }
+    .endpoint-chevron.open {
+      transform: rotate(180deg);
+    }
+    .endpoint-details {
+      display: none;
+      padding: 1.5rem;
+      border-top: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .endpoint-details.open {
+      display: block;
+    }
+    .grid-details {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+    }
+    @media (max-width: 768px) {
+      .grid-details { grid-template-columns: 1fr; }
+    }
+    .detail-section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .field-group {
+      margin-bottom: 1rem;
+    }
+    .field-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .field-group input, .field-group textarea {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .field-group input:focus, .field-group textarea:focus {
+      border-color: var(--primary-light);
+    }
+    .btn-test {
+      padding: 0.65rem 1.2rem;
+      background: var(--primary);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+      transition: all 0.2s;
+      margin-top: 1.5rem;
+    }
+    .btn-test:hover {
+      background: var(--primary-light);
+      transform: translateY(-1px);
+    }
+    .response-wrapper {
+      background: #030712;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 250px;
+    }
+    .response-header {
+      padding: 0.6rem 1rem;
+      background: #111827;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .response-header span {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .status-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .status-code.success { background: rgba(16, 185, 129, 0.15); color: var(--get); }
+    .status-code.error { background: rgba(239, 68, 68, 0.15); color: var(--delete); }
+    
+    .response-body {
+      padding: 1rem;
+      overflow-y: auto;
+      flex-grow: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #34d399;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .toast {
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      padding: .65rem 1.2rem; border-radius: 10px;
+      font-size: .88rem; font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,.3);
+      animation: slideIn .3s ease;
+    }
+    @keyframes slideIn { from { opacity:0; transform: translateX(30px); } to { opacity:1; transform: translateX(0); } }
+    .toast.success { background: #d1fae5; color: #065f46; }
+    .toast.error   { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-logo">
+    <img src="assets/Logos/Icon.png" alt="CRMini Logo">
+    <h1>CR<span>Mini</span> API Playground</h1>
+  </div>
+  <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Voltar ao App</a>
+</header>
+
+<main>
+  <div class="description-card">
+    <p>Bem-vindo ao <b>Playground Interativo da API do CRMini</b>! Esta página funciona de maneira semelhante ao Swagger UI, listando todos os endpoints disponíveis na sua aplicação e permitindo que você os teste ao vivo diretamente no banco de dados SQLite local.</p>
+    <p>Para rotas que exigem um ID (ex: <code>DELETE /api/leads/:id</code>), insira o ID correspondente na caixa correspondente. Para rotas que requerem dados (como cadastro e login), você pode modificar o corpo (Body JSON) livremente antes de testar.</p>
+  </div>
+
+  <!-- AUTH SECTION -->
+  <div class="section-title">
+    <i class="fa-solid fa-shield-halved"></i> Autenticação
+  </div>
+
+  <!-- POST LOGIN -->
+  <div class="endpoint-card">
+    <div class="endpoint-header" onclick="toggleDetails('card-login')">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/auth/login</span>
+      <span class="endpoint-desc">Autenticar um usuário e iniciar sessão</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-login"></i>
+    </div>
+    <div class="endpoint-details" id="card-login">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros (Body JSON)</div>
+          <div class="field-group">
+            <label>JSON Body</label>
+            <textarea id="body-login" rows="5">
+{
+  "email": "",
+  "password": ""
+}</textarea>
+          </div>
+          <button class="btn-test" onclick="testEndpoint('POST', '/api/auth/login', 'body-login', null, 'res-login')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-login">-</span>
+            </div>
+            <div class="response-body" id="res-login">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST REGISTER -->
+  <div class="endpoint-card">
+    <div class="endpoint-header" onclick="toggleDetails('card-register')">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/auth/register</span>
+      <span class="endpoint-desc">Registrar uma nova conta de usuário</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-register"></i>
+    </div>
+    <div class="endpoint-details" id="card-register">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros (Body JSON)</div>
+          <div class="field-group">
+            <label>JSON Body</label>
+            <textarea id="body-register" rows="6">
+{
+  "name": "",
+  "email": "",
+  "password": ""
+}</textarea>
+          </div>
+          <button class="btn-test" onclick="testEndpoint('POST', '/api/auth/register', 'body-register', null, 'res-register')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-register">-</span>
+            </div>
+            <div class="response-body" id="res-register">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USERS SECTION -->
+  <div class="section-title">
+    <i class="fa-solid fa-users"></i> Gerenciamento de Usuários
+  </div>
+
+  <!-- GET USERS -->
+  <div class="endpoint-card">
+    <div class="endpoint-header" onclick="toggleDetails('card-get-users')">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/users</span>
+      <span class="endpoint-desc">Listar todos os usuários do sistema</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-get-users"></i>
+    </div>
+    <div class="endpoint-details" id="card-get-users">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <p style="font-size: 0.85rem; color: var(--muted);">Este endpoint não requer nenhum parâmetro ou cabeçalho adicional.</p>
+          <button class="btn-test" onclick="testEndpoint('GET', '/api/users', null, null, 'res-get-users')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-get-users">-</span>
+            </div>
+            <div class="response-body" id="res-get-users">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST CREATE USER -->
+  <div class="endpoint-card">
+    <div class="endpoint-header" onclick="toggleDetails('card-create-user')">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/users</span>
+      <span class="endpoint-desc">Adicionar um novo usuário administrativamente</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-create-user"></i>
+    </div>
+    <div class="endpoint-details" id="card-create-user">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros (Body JSON)</div>
+          <div class="field-group">
+            <label>JSON Body</label>
+            <textarea id="body-create-user" rows="6">{
+  "name": "",
+  "email": "",
+  "password": ""
+}</textarea>
+          </div>
+          <button class="btn-test" onclick="testEndpoint('POST', '/api/users', 'body-create-user', null, 'res-create-user')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-create-user">-</span>
+            </div>
+            <div class="response-body" id="res-create-user">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUT UPDATE USER -->
+  <div class="endpoint-card">
+    <div class="endpoint-header" onclick="toggleDetails('card-update-user')">
+      <span class="method-badge put">PUT</span>
+      <span class="endpoint-path">/api/users/:id</span>
+      <span class="endpoint-desc">Atualizar informações de um usuário existente</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-update-user"></i>
+    </div>
+    <div class="endpoint-details" id="card-update-user">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <div class="field-group">
+            <label>ID do Usuário (URL Param)</label>
+            <input type="text" id="param-update-user-id" placeholder="Ex: user_sales_1" value="user_sales_1">
+          </div>
+          <div class="field-group">
+            <label>JSON Body</label>
+            <textarea id="body-update-user" rows="5">
+{
+  "name": "",
+  "email": "",
+  "password": ""
+}
+            </textarea>
+          </div>
+          <button class="btn-test" onclick="testEndpoint('PUT', '/api/users/', 'body-update-user', 'param-update-user-id', 'res-update-user')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-update-user">-</span>
+            </div>
+            <div class="response-body" id="res-update-user">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE USER -->
+  <div class="endpoint-card">
+    <div class="endpoint-header" onclick="toggleDetails('card-delete-user')">
+      <span class="method-badge delete">DELETE</span>
+      <span class="endpoint-path">/api/users/:id</span>
+      <span class="endpoint-desc">Remover um usuário do sistema</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-delete-user"></i>
+    </div>
+    <div class="endpoint-details" id="card-delete-user">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <div class="field-group">
+            <label>ID do Usuário (URL Param)</label>
+            <input type="text" id="param-delete-user-id" placeholder="Ex: user_sales_1" value="">
+          </div>
+          <button class="btn-test" onclick="testEndpoint('DELETE', '/api/users/', null, 'param-delete-user-id', 'res-delete-user')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-delete-user">-</span>
+            </div>
+            <div class="response-body" id="res-delete-user">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADS SECTION -->
+  <div class="section-title">
+    <i class="fa-solid fa-diagram-project"></i> Gerenciamento de Leads (Funil / Kanban)
+  </div>
+
+  <!-- GET LEADS -->
+  <div class="endpoint-card">
+    <div class="endpoint-header" onclick="toggleDetails('card-get-leads')">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/leads</span>
+      <span class="endpoint-desc">Listar todos os Leads cadastrados</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-get-leads"></i>
+    </div>
+    <div class="endpoint-details" id="card-get-leads">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <p style="font-size: 0.85rem; color: var(--muted);">Este endpoint não requer nenhum parâmetro ou cabeçalho adicional.</p>
+          <button class="btn-test" onclick="testEndpoint('GET', '/api/leads', null, null, 'res-get-leads')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-get-leads">-</span>
+            </div>
+            <div class="response-body" id="res-get-leads">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST CREATE LEAD -->
+  <div class="endpoint-card">
+    <div class="endpoint-header" onclick="toggleDetails('card-create-lead')">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/leads</span>
+      <span class="endpoint-desc">Cadastrar um novo lead no funil</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-create-lead"></i>
+    </div>
+    <div class="endpoint-details" id="card-create-lead">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros (Body JSON)</div>
+          <div class="field-group">
+            <label>JSON Body</label>
+            <textarea id="body-create-lead" rows="8">{
+  "name": "",
+  "company": "",
+  "value": 15000,
+  "source": "",
+  "stage": "",
+  "date": ""
+}</textarea>
+          </div>
+          <button class="btn-test" onclick="testEndpoint('POST', '/api/leads', 'body-create-lead', null, 'res-create-lead')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-create-lead">-</span>
+            </div>
+            <div class="response-body" id="res-create-lead">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUT UPDATE LEAD -->
+  <div class="endpoint-card">
+    <div class="endpoint-header" onclick="toggleDetails('card-update-lead')">
+      <span class="method-badge put">PUT</span>
+      <span class="endpoint-path">/api/leads/:id</span>
+      <span class="endpoint-desc">Atualizar informações de um lead existente</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-update-lead"></i>
+    </div>
+    <div class="endpoint-details" id="card-update-lead">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <div class="field-group">
+            <label>ID do Lead (URL Param)</label>
+            <input type="text" id="param-update-lead-id" placeholder="Ex: new_lead_xyz" value="new_lead_xyz">
+          </div>
+          <div class="field-group">
+            <label>JSON Body</label>
+            <textarea id="body-update-lead" rows="7">{
+  "name": "",
+  "company": "",
+  "value": 0,
+  "source": "",
+  "stage": ""
+}</textarea>
+          </div>
+          <button class="btn-test" onclick="testEndpoint('PUT', '/api/leads/', 'body-update-lead', 'param-update-lead-id', 'res-update-lead')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-update-lead">-</span>
+            </div>
+            <div class="response-body" id="res-update-lead">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE LEAD -->
+  <div class="endpoint-card"> 
+    <div class="endpoint-header" onclick="toggleDetails('card-delete-lead')">
+      <span class="method-badge delete">DELETE</span>
+      <span class="endpoint-path">/api/leads/:id</span>
+      <span class="endpoint-desc">Remover um lead definitivamente</span>
+      <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-delete-lead"></i>
+    </div>
+    <div class="endpoint-details" id="card-delete-lead">
+      <div class="grid-details">
+        <div>
+          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <div class="field-group">
+            <label>ID do Lead (URL Param)</label>
+            <input type="text" id="param-delete-lead-id" placeholder="Ex: new_lead_xyz" value="">
+          </div>
+          <button class="btn-test" onclick="testEndpoint('DELETE', '/api/leads/', null, 'param-delete-lead-id', 'res-delete-lead')">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+          </button>
+        </div>
+        <div>
+          <div class="response-wrapper">
+            <div class="response-header">
+              <span>Resposta</span>
+              <span class="status-code" id="status-res-delete-lead">-</span>
+            </div>
+            <div class="response-body" id="res-delete-lead">// A resposta em tempo real aparecerá aqui...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  function toggleDetails(id) {
+    const details = document.getElementById(id);
+    const chevron = document.getElementById('chevron-' + id);
+    if (details.classList.contains('open')) {
+      details.classList.remove('open');
+      chevron.classList.remove('open');
+    } else {
+      details.classList.add('open');
+      chevron.classList.add('open');
+    }
+  }
+
+  function showToast(msg, type = 'success') {
+    const existing = document.getElementById('toast-el');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.id = 'toast-el';
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { if (t.parentNode) t.remove(); }, 3000);
+  }
+
+  async function testEndpoint(method, endpoint, bodyId, paramId, responseId) {
+    const resBodyEl = document.getElementById(responseId);
+    const statusEl = document.getElementById('status-' + responseId);
+    resBodyEl.textContent = 'Carregando requisição...';
+    resBodyEl.style.color = '#e5e7eb';
+    statusEl.textContent = 'Carregando...';
+    statusEl.className = 'status-code';
+
+    let url = endpoint;
+    if (paramId) {
+      const val = document.getElementById(paramId).value.trim();
+      if (!val) {
+        showToast('Por favor, informe o ID nos parâmetros!', 'error');
+        resBodyEl.textContent = '// Erro: ID obrigatório ausente';
+        resBodyEl.style.color = '#ef4444';
+        statusEl.textContent = 'Erro';
+        statusEl.classList.add('error');
+        return;
+      }
+      url += val;
+    }
+
+    const options = {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    if (bodyId) {
+      const bodyVal = document.getElementById(bodyId).value.trim();
+      try {
+        options.body = JSON.stringify(JSON.parse(bodyVal));
+      } catch (err) {
+        showToast('JSON inválido no corpo da requisição!', 'error');
+        resBodyEl.textContent = '// Erro de Sintaxe JSON:\n' + err.message;
+        resBodyEl.style.color = '#ef4444';
+        statusEl.textContent = 'Erro JSON';
+        statusEl.classList.add('error');
+        return;
+      }
+    }
+
+    try {
+      const startTime = performance.now();
+      const res = await fetch(url, options);
+      const endTime = performance.now();
+      const duration = Math.round(endTime - startTime);
+
+      statusEl.textContent = `${res.status} ${res.statusText} (${duration}ms)`;
+      
+      if (res.ok) {
+        statusEl.classList.add('success');
+        resBodyEl.style.color = '#34d399';
+        showToast('Requisição executada com sucesso!');
+      } else {
+        statusEl.classList.add('error');
+        resBodyEl.style.color = '#f87171';
+        showToast('A API respondeu com um erro.', 'error');
+      }
+
+      try {
+        const json = await res.json();
+        resBodyEl.textContent = JSON.stringify(json, null, 2);
+      } catch (e) {
+        const text = await res.text();
+        resBodyEl.textContent = text || '// Resposta sem conteúdo';
+      }
+    } catch (err) {
+      showToast('Erro de rede ao disparar requisição!', 'error');
+      resBodyEl.textContent = '// Erro de Conexão com o Servidor:\n' + err.message;
+      resBodyEl.style.color = '#ef4444';
+      statusEl.textContent = 'Falha de Rede';
+      statusEl.classList.add('error');
+    }
+  }
+</script>
+</body>
+</html>
