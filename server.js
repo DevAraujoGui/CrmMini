@@ -5,6 +5,30 @@ const path = require('path');
 const crypto = require('crypto');
 
 // ============================================================
+// GLOBAL ERROR HANDLING
+// ============================================================
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('SIGINT', () => {
+  console.log('Received SIGINT. Shutting down gracefully...');
+  db.close(() => {
+    process.exit(0);
+  });
+});
+
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM. Shutting down gracefully...');
+  db.close(() => {
+    process.exit(0);
+  });
+});
+// ============================================================
 // UTILITY FUNCTIONS
 // ============================================================
 function genId() {
@@ -56,9 +80,23 @@ function initializeDatabase() {
         value REAL DEFAULT 0,
         source TEXT NOT NULL,
         stage TEXT NOT NULL,
-        date TEXT NOT NULL
+        date TEXT NOT NULL,
+        sort_order INTEGER DEFAULT 0,
+        temperature TEXT DEFAULT 'warm',
+        phone TEXT DEFAULT '',
+        priority TEXT DEFAULT 'medium',
+        custom_notes TEXT DEFAULT ''
       )
-    `);
+    `, (err) => {
+      if (!err) {
+        // Ensure new columns exist if table was already created in a previous version
+        db.run("ALTER TABLE leads ADD COLUMN sort_order INTEGER DEFAULT 0", () => {});
+        db.run("ALTER TABLE leads ADD COLUMN temperature TEXT DEFAULT 'warm'", () => {});
+        db.run("ALTER TABLE leads ADD COLUMN phone TEXT DEFAULT ''", () => {});
+        db.run("ALTER TABLE leads ADD COLUMN priority TEXT DEFAULT 'medium'", () => {});
+        db.run("ALTER TABLE leads ADD COLUMN custom_notes TEXT DEFAULT ''", () => {});
+      }
+    });
 
     // Check if initial users exist, if not, create default
     db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
@@ -86,14 +124,14 @@ function initializeDatabase() {
       if (err) console.error(err);
       if (row && row.count === 0) {
         const initialLeads = [
-          { id: 'lead1', name: 'João Silva', company: 'Tech Solutions LTDA', value: 12000, source: 'whatsapp', stage: 'new', date: 'Abr 6' },
-          { id: 'lead2', name: 'Maria Oliveira', company: 'Unichristus', value: 8500, source: 'instagram', stage: 'new', date: 'Abr 4' },
-          { id: 'lead3', name: 'Carlos Santos', company: 'Construtora XYZ', value: 45000, source: 'facebook', stage: 'negotiating', date: 'Mai 9' }
+          { id: 'lead1', name: 'João Silva', company: 'Tech Solutions LTDA', value: 12000, source: 'whatsapp', stage: 'new', date: 'Abr 6', sort_order: 1 },
+          { id: 'lead2', name: 'Maria Oliveira', company: 'Unichristus', value: 8500, source: 'instagram', stage: 'new', date: 'Abr 4', sort_order: 2 },
+          { id: 'lead3', name: 'Carlos Santos', company: 'Construtora XYZ', value: 45000, source: 'facebook', stage: 'negotiating', date: 'Mai 9', sort_order: 1 }
         ];
 
-        const stmt = db.prepare("INSERT INTO leads (id, name, company, value, source, stage, date) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        const stmt = db.prepare("INSERT INTO leads (id, name, company, value, source, stage, date, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         initialLeads.forEach(lead => {
-          stmt.run([lead.id, lead.name, lead.company, lead.value, lead.source, lead.stage, lead.date]);
+          stmt.run([lead.id, lead.name, lead.company, lead.value, lead.source, lead.stage, lead.date, lead.sort_order]);
         });
         stmt.finalize(() => {
           console.log("Initial test leads added to database.");
@@ -214,7 +252,7 @@ app.delete('/api/users/:id', (req, res) => {
 // LEADS API
 // ============================================================
 app.get('/api/leads', (req, res) => {
-  db.all('SELECT * FROM leads', [], (err, rows) => {
+  db.all('SELECT * FROM leads ORDER BY sort_order ASC, id ASC', [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -227,24 +265,30 @@ app.post('/api/leads', (req, res) => {
   const id = req.body.id || genId();
   const value = req.body.value || 0;
   const date = req.body.date || formatCurrentDate();
+  const sort_order = req.body.sort_order !== undefined ? req.body.sort_order : 0;
+  const temperature = req.body.temperature || 'warm';
+  const phone = req.body.phone || '';
+  const priority = req.body.priority || 'medium';
+  const custom_notes = req.body.custom_notes || '';
+  
   if (!name || !company || !source || !stage) {
     return res.status(400).json({ error: 'Required fields are missing (name, company, source, stage)' });
   }
   db.run(
-    'INSERT INTO leads (id, name, company, value, source, stage, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [id, name, company, value, source, stage, date],
+    'INSERT INTO leads (id, name, company, value, source, stage, date, sort_order, temperature, phone, priority, custom_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [id, name, company, value, source, stage, date, sort_order, temperature, phone, priority, custom_notes],
     function (err) {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
-      res.status(201).json({ id, name, company, value, source, stage, date });
+      res.status(201).json({ id, name, company, value, source, stage, date, sort_order, temperature, phone, priority, custom_notes });
     }
   );
 });
 
 app.put('/api/leads/:id', (req, res) => {
   const { id } = req.params;
-  const { name, company, value, source, stage } = req.body;
+  const { name, company, value, source, stage, sort_order, temperature, phone, priority, custom_notes } = req.body;
   
   if (!name || !company || value === undefined || !source || !stage) {
     return res.status(400).json({ error: 'Todos os campos são obrigatórios (name, company, value, source, stage)' });
@@ -254,9 +298,15 @@ app.put('/api/leads/:id', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ error: 'Lead não encontrado' });
 
+    const targetSortOrder = sort_order !== undefined ? sort_order : (row.sort_order || 0);
+    const targetTemp = temperature !== undefined ? temperature : (row.temperature || 'warm');
+    const targetPhone = phone !== undefined ? phone : (row.phone || '');
+    const targetPriority = priority !== undefined ? priority : (row.priority || 'medium');
+    const targetNotes = custom_notes !== undefined ? custom_notes : (row.custom_notes || '');
+
     db.run(
-      'UPDATE leads SET name = ?, company = ?, value = ?, source = ?, stage = ? WHERE id = ?',
-      [name, company, value, source, stage, id],
+      'UPDATE leads SET name = ?, company = ?, value = ?, source = ?, stage = ?, sort_order = ?, temperature = ?, phone = ?, priority = ?, custom_notes = ? WHERE id = ?',
+      [name, company, value, source, stage, targetSortOrder, targetTemp, targetPhone, targetPriority, targetNotes, id],
       function (err) {
         if (err) {
           return res.status(500).json({ error: err.message });
@@ -264,6 +314,26 @@ app.put('/api/leads/:id', (req, res) => {
         res.json({ message: 'Lead updated successfully' });
       }
     );
+  });
+});
+
+app.post('/api/leads/reorder', (req, res) => {
+  const { orders } = req.body; // Array de { id, stage, sort_order }
+  if (!orders || !Array.isArray(orders)) {
+    return res.status(400).json({ error: 'Orders array is required' });
+  }
+  
+  const stmt = db.prepare('UPDATE leads SET stage = ?, sort_order = ? WHERE id = ?');
+  db.serialize(() => {
+    orders.forEach(item => {
+      stmt.run([item.stage, item.sort_order, item.id]);
+    });
+    stmt.finalize((err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: 'Leads reordered successfully' });
+    });
   });
 });
 
@@ -302,4 +372,5 @@ app.get('/docs', (req, res) => {
 // Start the server
 app.listen(PORT, () => {
   console.log(`CRMini Server running on http://localhost:${PORT}`);
+console.log('Process PID:', process.pid);
 });

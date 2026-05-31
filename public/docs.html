@@ -3,320 +3,448 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRMini API - Swagger Interativo</title>
+  <title>LeadBoard API - Playground Interativo</title>
   <link rel="icon" type="image/png" href="assets/Logos/Icon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     :root {
-      --primary: #4f46e5;
-      --primary-light: #6366f1;
-      --primary-dark: #3730a3;
-      --bg: #0b0f19;
-      --card-bg: #111827;
-      --text: #f3f4f6;
-      --muted: #9ca3af;
-      --border: #1f2937;
+      --bg: #0f0f11;
+      --surface: #1e1e20;
+      --sidebar: #171719;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f3f3f3;
+      --muted: #a1a1a0;
+      
+      --indigo: #2eaadc;
+      --indigo-light: #58bee7;
+      --indigo-subtle: rgba(46, 170, 220, 0.12);
+
       --get: #10b981;
       --post: #3b82f6;
       --put: #f59e0b;
       --delete: #ef4444;
+      
+      --terminal-bg: #050507;
+      --terminal-header: #121214;
+      --terminal-text: #38bdf8;
+      --terminal-prompt: #a855f7;
     }
+
     * {
       box-sizing: border-box;
-      font-family: 'Sora', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
+    
     body {
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
       padding: 0;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
+
     header {
-      background: linear-gradient(135deg, #1e1b4b 0%, #0b0f19 100%);
-      padding: 2.5rem 2rem;
-      border-bottom: 1.5px solid var(--border);
+      background: var(--sidebar);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
+
     .header-logo {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
     }
+    
     .header-logo img {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      object-fit: contain;
     }
+    
     .header-logo h1 {
       margin: 0;
-      font-size: 1.4rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .header-logo h1 span {
+      color: var(--indigo);
       font-weight: 700;
     }
-    .header-logo h1 span {
-      color: var(--primary-light);
-    }
+
     .back-btn {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.6rem 1.2rem;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.05);
+      gap: 0.4rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 6px;
+      background: transparent;
       border: 1px solid var(--border);
-      color: var(--text);
+      color: var(--muted);
       text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: all 0.2s;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
     }
+
     .back-btn:hover {
-      background: var(--primary);
-      border-color: var(--primary-light);
-      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+      background: var(--sidebar-active);
+      color: var(--text);
+      border-color: var(--indigo);
     }
+
     main {
       max-width: 1200px;
       margin: 2rem auto;
       padding: 0 1.5rem;
+      width: 100%;
+      flex-grow: 1;
     }
-    .description-card {
-      background: var(--card-bg);
-      border: 1.5px solid var(--border);
-      border-radius: 16px;
+
+    /* Terminal/Notion hybrid description card */
+    .notion-description {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
       padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      margin-bottom: 2.5rem;
+      position: relative;
     }
-    .description-card p {
-      margin: 0 0 1rem;
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.6;
-    }
-    .description-card code {
-      font-family: 'JetBrains Mono', monospace;
-      background: rgba(255, 255, 255, 0.07);
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: var(--primary-light);
-      font-size: 0.85rem;
-    }
-    .section-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin: 2.5rem 0 1rem;
-      color: var(--text);
+
+    .notion-description h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 0 0 0.75rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      border-bottom: 1.5px solid var(--border);
-      padding-bottom: 0.5rem;
+      gap: 0.5rem;
     }
+
+    .notion-description p {
+      margin: 0 0 1rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    /* Shell Cmd block styling */
+    .cmd-bar {
+      background: var(--terminal-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .cmd-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cmd-prompt {
+      color: var(--terminal-prompt);
+      font-weight: 600;
+    }
+
+    .cmd-command {
+      color: #38bdf8;
+    }
+
+    .cmd-comment {
+      color: #64748b;
+      font-style: italic;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 2.5rem 0 1rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+
     .section-title i {
-      color: var(--primary-light);
+      color: var(--indigo);
+      font-size: 0.88rem;
     }
+
     .endpoint-card {
-      background: var(--card-bg);
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      margin-bottom: 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.8rem;
       overflow: hidden;
-      transition: all 0.2s;
+      transition: border-color 0.15s ease;
     }
+
     .endpoint-card:hover {
-      border-color: #374151;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      border-color: rgba(255, 255, 255, 0.15);
     }
+
     .endpoint-header {
-      padding: 1rem 1.5rem;
+      padding: 0.75rem 1.2rem;
       display: flex;
       align-items: center;
       gap: 1rem;
       cursor: pointer;
       user-select: none;
     }
+
     .method-badge {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
-      font-size: 0.8rem;
-      padding: 6px 12px;
-      border-radius: 8px;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 4px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      min-width: 80px;
+      min-width: 70px;
       text-align: center;
     }
-    .method-badge.get { background: rgba(16, 185, 129, 0.15); color: var(--get); border: 1px solid rgba(16, 185, 129, 0.3); }
-    .method-badge.post { background: rgba(59, 130, 246, 0.15); color: var(--post); border: 1px solid rgba(59, 130, 246, 0.3); }
-    .method-badge.put { background: rgba(245, 158, 11, 0.15); color: var(--put); border: 1px solid rgba(245, 158, 11, 0.3); }
-    .method-badge.delete { background: rgba(239, 68, 68, 0.15); color: var(--delete); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .method-badge.get { background: rgba(16, 185, 129, 0.15); color: var(--get); border: 1px solid rgba(16, 185, 129, 0.25); }
+    .method-badge.post { background: rgba(59, 130, 246, 0.15); color: var(--post); border: 1px solid rgba(59, 130, 246, 0.25); }
+    .method-badge.put { background: rgba(245, 158, 11, 0.15); color: var(--put); border: 1px solid rgba(245, 158, 11, 0.25); }
+    .method-badge.delete { background: rgba(239, 68, 68, 0.15); color: var(--delete); border: 1px solid rgba(239, 68, 68, 0.25); }
     
     .endpoint-path {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 500;
-      font-size: 0.95rem;
-      color: #e5e7eb;
+      font-size: 0.88rem;
+      color: var(--text);
     }
+    
     .endpoint-desc {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--muted);
       margin-left: auto;
     }
+    
     .endpoint-chevron {
       color: var(--muted);
-      transition: transform 0.2s;
+      font-size: 0.8rem;
+      transition: transform 0.2s ease;
     }
+    
     .endpoint-chevron.open {
       transform: rotate(180deg);
     }
+
     .endpoint-details {
       display: none;
       padding: 1.5rem;
       border-top: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.15);
     }
+
     .endpoint-details.open {
       display: block;
     }
+
     .grid-details {
       display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 2rem;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.5rem;
     }
-    @media (max-width: 768px) {
+
+    @media (max-width: 900px) {
       .grid-details { grid-template-columns: 1fr; }
     }
+
     .detail-section-title {
-      font-size: 0.85rem;
-      font-weight: 700;
+      font-size: 0.78rem;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--text);
-      margin-bottom: 1rem;
+      color: var(--muted);
+      margin-bottom: 0.8rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
+
     .field-group {
-      margin-bottom: 1rem;
+      margin-bottom: 0.8rem;
     }
+
     .field-group label {
       display: block;
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.72rem;
+      font-weight: 500;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       text-transform: uppercase;
     }
+
     .field-group input, .field-group textarea {
       width: 100%;
-      padding: 0.65rem 0.9rem;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      background: var(--terminal-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
       color: var(--text);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       outline: none;
-      transition: border 0.2s;
+      transition: border-color 0.15s ease;
     }
+
     .field-group input:focus, .field-group textarea:focus {
-      border-color: var(--primary-light);
+      border-color: var(--indigo);
     }
+
     .btn-test {
-      padding: 0.65rem 1.2rem;
-      background: var(--primary);
+      padding: 0.5rem 1rem;
+      background: var(--indigo);
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       color: white;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
-      transition: all 0.2s;
-      margin-top: 1.5rem;
+      gap: 0.4rem;
+      transition: opacity 0.15s ease;
+      margin-top: 1rem;
     }
+
     .btn-test:hover {
-      background: var(--primary-light);
-      transform: translateY(-1px);
+      opacity: 0.9;
     }
-    .response-wrapper {
-      background: #030712;
+
+    /* Terminal Emulator Window Style */
+    .terminal-window {
+      background: var(--terminal-bg);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 8px;
       overflow: hidden;
-      height: 100%;
       display: flex;
       flex-direction: column;
-      min-height: 250px;
+      min-height: 280px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     }
-    .response-header {
-      padding: 0.6rem 1rem;
-      background: #111827;
+
+    .terminal-header {
+      padding: 0.5rem 1rem;
+      background: var(--terminal-header);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .response-header span {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
     }
-    .status-code {
+
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .terminal-dot.red { background: #ff5f56; }
+    .terminal-dot.yellow { background: #ffbd2e; }
+    .terminal-dot.green { background: #27c93f; }
+
+    .terminal-title {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 2px 8px;
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .status-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 1px 6px;
       border-radius: 4px;
     }
-    .status-code.success { background: rgba(16, 185, 129, 0.15); color: var(--get); }
-    .status-code.error { background: rgba(239, 68, 68, 0.15); color: var(--delete); }
     
-    .response-body {
+    .status-badge.neutral { background: rgba(255,255,255,0.05); color: var(--muted); }
+    .status-badge.success { background: rgba(16, 185, 129, 0.15); color: var(--get); }
+    .status-badge.error { background: rgba(239, 68, 68, 0.15); color: var(--delete); }
+
+    .terminal-body {
       padding: 1rem;
       overflow-y: auto;
       flex-grow: 1;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      color: #34d399;
+      font-family: 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: #38bdf8;
       white-space: pre-wrap;
       word-break: break-all;
+      line-height: 1.4;
     }
+
     .toast {
       position: fixed; top: 20px; right: 20px; z-index: 9999;
-      padding: .65rem 1.2rem; border-radius: 10px;
-      font-size: .88rem; font-weight: 600;
-      box-shadow: 0 8px 24px rgba(0,0,0,.3);
-      animation: slideIn .3s ease;
+      padding: .5rem 1rem; border-radius: 6px;
+      font-size: .8rem; font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      animation: slideIn .25s ease;
+      border: 1px solid rgba(255,255,255,0.05);
     }
-    @keyframes slideIn { from { opacity:0; transform: translateX(30px); } to { opacity:1; transform: translateX(0); } }
-    .toast.success { background: #d1fae5; color: #065f46; }
-    .toast.error   { background: #fee2e2; color: #991b1b; }
+    
+    @keyframes slideIn { from { opacity:0; transform: translateY(-20px); } to { opacity:1; transform: translateY(0); } }
+    .toast.success { background: #edf7ed; color: #1e4620; border-color: #c8e6c9; }
+    .toast.error   { background: #fdeded; color: #5f2120; border-color: #f5c2c2; }
   </style>
 </head>
 <body>
 
 <header>
   <div class="header-logo">
-    <img src="assets/Logos/Icon.png" alt="CRMini Logo">
-    <h1>CR<span>Mini</span> API Playground</h1>
+    <img src="assets/Logos/Icon.png" alt="Icon">
+    <h1>Lead<span>Board</span> API Shell</h1>
   </div>
-  <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Voltar ao App</a>
+  <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Voltar ao Quadro</a>
 </header>
 
 <main>
-  <div class="description-card">
-    <p>Bem-vindo ao <b>Playground Interativo da API do CRMini</b>! Esta página funciona de maneira semelhante ao Swagger UI, listando todos os endpoints disponíveis na sua aplicação e permitindo que você os teste ao vivo diretamente no banco de dados SQLite local.</p>
-    <p>Para rotas que exigem um ID (ex: <code>DELETE /api/leads/:id</code>), insira o ID correspondente na caixa correspondente. Para rotas que requerem dados (como cadastro e login), você pode modificar o corpo (Body JSON) livremente antes de testar.</p>
+  <div class="notion-description">
+    <h2><i class="fa-solid fa-terminal" style="color: var(--indigo)"></i> LeadBoard REST Console</h2>
+    <p>O console interativo da API do LeadBoard permite disparar requisições diretamente para as rotas Express rodando localmente no banco de dados SQLite.</p>
+    
+    <div class="cmd-bar">
+      <div class="cmd-line">
+        <span class="cmd-prompt">$</span>
+        <span class="cmd-command">curl -X GET http://localhost:3000/api/health</span>
+      </div>
+      <div class="cmd-line">
+        <span class="cmd-comment"># status: 200 OK | database: connected</span>
+      </div>
+      <div class="cmd-line">
+        <span class="cmd-prompt">$</span>
+        <span class="cmd-command">node --version</span>
+        <span class="cmd-comment"># v20.x SQLite active</span>
+      </div>
+    </div>
   </div>
 
   <!-- AUTH SECTION -->
@@ -329,32 +457,37 @@
     <div class="endpoint-header" onclick="toggleDetails('card-login')">
       <span class="method-badge post">POST</span>
       <span class="endpoint-path">/api/auth/login</span>
-      <span class="endpoint-desc">Autenticar um usuário e iniciar sessão</span>
+      <span class="endpoint-desc">Autenticar um usuário no sistema</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-login"></i>
     </div>
     <div class="endpoint-details" id="card-login">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros (Body JSON)</div>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros (Payload JSON)</div>
           <div class="field-group">
-            <label>JSON Body</label>
-            <textarea id="body-login" rows="5">
+            <label>Corpo JSON</label>
+            <textarea id="body-login" rows="4">
 {
-  "email": "",
-  "password": ""
+  "email": "admin@crmini.com",
+  "password": "adminpassword"
 }</textarea>
           </div>
           <button class="btn-test" onclick="testEndpoint('POST', '/api/auth/login', 'body-login', null, 'res-login')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec login.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-login">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-login">-</span>
             </div>
-            <div class="response-body" id="res-login">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-login">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -366,33 +499,38 @@
     <div class="endpoint-header" onclick="toggleDetails('card-register')">
       <span class="method-badge post">POST</span>
       <span class="endpoint-path">/api/auth/register</span>
-      <span class="endpoint-desc">Registrar uma nova conta de usuário</span>
+      <span class="endpoint-desc">Registrar um novo usuário</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-register"></i>
     </div>
     <div class="endpoint-details" id="card-register">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros (Body JSON)</div>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros (Payload JSON)</div>
           <div class="field-group">
-            <label>JSON Body</label>
-            <textarea id="body-register" rows="6">
+            <label>Corpo JSON</label>
+            <textarea id="body-register" rows="5">
 {
-  "name": "",
-  "email": "",
-  "password": ""
+  "name": "Consultor Vendas",
+  "email": "vendas@leadboard.com",
+  "password": "senhaforte123"
 }</textarea>
           </div>
           <button class="btn-test" onclick="testEndpoint('POST', '/api/auth/register', 'body-register', null, 'res-register')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec register.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-register">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-register">-</span>
             </div>
-            <div class="response-body" id="res-register">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-register">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -409,25 +547,30 @@
     <div class="endpoint-header" onclick="toggleDetails('card-get-users')">
       <span class="method-badge get">GET</span>
       <span class="endpoint-path">/api/users</span>
-      <span class="endpoint-desc">Listar todos os usuários do sistema</span>
+      <span class="endpoint-desc">Listar todos os usuários do banco</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-get-users"></i>
     </div>
     <div class="endpoint-details" id="card-get-users">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
-          <p style="font-size: 0.85rem; color: var(--muted);">Este endpoint não requer nenhum parâmetro ou cabeçalho adicional.</p>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros</div>
+          <p style="font-size: 0.8rem; color: var(--muted); font-family: monospace;">$ curl -X GET /api/users</p>
           <button class="btn-test" onclick="testEndpoint('GET', '/api/users', null, null, 'res-get-users')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec get_users.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-get-users">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-get-users">-</span>
             </div>
-            <div class="response-body" id="res-get-users">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-get-users">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -439,32 +582,37 @@
     <div class="endpoint-header" onclick="toggleDetails('card-create-user')">
       <span class="method-badge post">POST</span>
       <span class="endpoint-path">/api/users</span>
-      <span class="endpoint-desc">Adicionar um novo usuário administrativamente</span>
+      <span class="endpoint-desc">Criar novo usuário administrativemente</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-create-user"></i>
     </div>
     <div class="endpoint-details" id="card-create-user">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros (Body JSON)</div>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros (Payload JSON)</div>
           <div class="field-group">
-            <label>JSON Body</label>
-            <textarea id="body-create-user" rows="6">{
-  "name": "",
-  "email": "",
-  "password": ""
+            <label>Corpo JSON</label>
+            <textarea id="body-create-user" rows="5">{
+  "name": "Novo Usuário",
+  "email": "user@crmini.com",
+  "password": "senhaexemplo123"
 }</textarea>
           </div>
           <button class="btn-test" onclick="testEndpoint('POST', '/api/users', 'body-create-user', null, 'res-create-user')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec create_user.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-create-user">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-create-user">-</span>
             </div>
-            <div class="response-body" id="res-create-user">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-create-user">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -476,38 +624,42 @@
     <div class="endpoint-header" onclick="toggleDetails('card-update-user')">
       <span class="method-badge put">PUT</span>
       <span class="endpoint-path">/api/users/:id</span>
-      <span class="endpoint-desc">Atualizar informações de um usuário existente</span>
+      <span class="endpoint-desc">Atualizar cadastro de usuário existente</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-update-user"></i>
     </div>
     <div class="endpoint-details" id="card-update-user">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros</div>
           <div class="field-group">
-            <label>ID do Usuário (URL Param)</label>
-            <input type="text" id="param-update-user-id" placeholder="Ex: user_sales_1" value="user_sales_1">
+            <label>ID do Usuário</label>
+            <input type="text" id="param-update-user-id" placeholder="Ex: user_admin" value="user_admin">
           </div>
           <div class="field-group">
-            <label>JSON Body</label>
+            <label>Corpo JSON</label>
             <textarea id="body-update-user" rows="5">
 {
-  "name": "",
-  "email": "",
-  "password": ""
-}
-            </textarea>
+  "name": "Administrador Alterado",
+  "email": "admin@crmini.com",
+  "password": "adminpassword"
+}</textarea>
           </div>
           <button class="btn-test" onclick="testEndpoint('PUT', '/api/users/', 'body-update-user', 'param-update-user-id', 'res-update-user')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec update_user.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-update-user">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-update-user">-</span>
             </div>
-            <div class="response-body" id="res-update-user">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-update-user">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -519,28 +671,33 @@
     <div class="endpoint-header" onclick="toggleDetails('card-delete-user')">
       <span class="method-badge delete">DELETE</span>
       <span class="endpoint-path">/api/users/:id</span>
-      <span class="endpoint-desc">Remover um usuário do sistema</span>
+      <span class="endpoint-desc">Remover um usuário do banco</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-delete-user"></i>
     </div>
     <div class="endpoint-details" id="card-delete-user">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros</div>
           <div class="field-group">
-            <label>ID do Usuário (URL Param)</label>
-            <input type="text" id="param-delete-user-id" placeholder="Ex: user_sales_1" value="">
+            <label>ID do Usuário</label>
+            <input type="text" id="param-delete-user-id" placeholder="Insira o ID do usuário" value="">
           </div>
           <button class="btn-test" onclick="testEndpoint('DELETE', '/api/users/', null, 'param-delete-user-id', 'res-delete-user')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec delete_user.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-delete-user">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-delete-user">-</span>
             </div>
-            <div class="response-body" id="res-delete-user">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-delete-user">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -549,7 +706,7 @@
 
   <!-- LEADS SECTION -->
   <div class="section-title">
-    <i class="fa-solid fa-diagram-project"></i> Gerenciamento de Leads (Funil / Kanban)
+    <i class="fa-solid fa-diagram-project"></i> Funil de Vendas (Leads)
   </div>
 
   <!-- GET LEADS -->
@@ -557,25 +714,30 @@
     <div class="endpoint-header" onclick="toggleDetails('card-get-leads')">
       <span class="method-badge get">GET</span>
       <span class="endpoint-path">/api/leads</span>
-      <span class="endpoint-desc">Listar todos os Leads cadastrados</span>
+      <span class="endpoint-desc">Listar todos os leads</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-get-leads"></i>
     </div>
     <div class="endpoint-details" id="card-get-leads">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
-          <p style="font-size: 0.85rem; color: var(--muted);">Este endpoint não requer nenhum parâmetro ou cabeçalho adicional.</p>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros</div>
+          <p style="font-size: 0.8rem; color: var(--muted); font-family: monospace;">$ curl -X GET /api/leads</p>
           <button class="btn-test" onclick="testEndpoint('GET', '/api/leads', null, null, 'res-get-leads')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec get_leads.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-get-leads">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-get-leads">-</span>
             </div>
-            <div class="response-body" id="res-get-leads">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-get-leads">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -587,35 +749,43 @@
     <div class="endpoint-header" onclick="toggleDetails('card-create-lead')">
       <span class="method-badge post">POST</span>
       <span class="endpoint-path">/api/leads</span>
-      <span class="endpoint-desc">Cadastrar um novo lead no funil</span>
+      <span class="endpoint-desc">Criar um novo lead</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-create-lead"></i>
     </div>
     <div class="endpoint-details" id="card-create-lead">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros (Body JSON)</div>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros (Payload JSON)</div>
           <div class="field-group">
-            <label>JSON Body</label>
-            <textarea id="body-create-lead" rows="8">{
-  "name": "",
-  "company": "",
-  "value": 15000,
-  "source": "",
-  "stage": "",
-  "date": ""
+            <label>Corpo JSON</label>
+            <textarea id="body-create-lead" rows="10">{
+  "name": "Guilherme Silva",
+  "company": "Asimov Tech",
+  "value": 25000,
+  "source": "instagram",
+  "stage": "new",
+  "phone": "(85) 98765-4321",
+  "temperature": "hot",
+  "priority": "high",
+  "custom_notes": "Pronto para fechar negociação na próxima reunião."
 }</textarea>
           </div>
           <button class="btn-test" onclick="testEndpoint('POST', '/api/leads', 'body-create-lead', null, 'res-create-lead')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec create_lead.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-create-lead">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-create-lead">-</span>
             </div>
-            <div class="response-body" id="res-create-lead">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-create-lead">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -627,38 +797,47 @@
     <div class="endpoint-header" onclick="toggleDetails('card-update-lead')">
       <span class="method-badge put">PUT</span>
       <span class="endpoint-path">/api/leads/:id</span>
-      <span class="endpoint-desc">Atualizar informações de um lead existente</span>
+      <span class="endpoint-desc">Atualizar dados completos do lead</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-update-lead"></i>
     </div>
     <div class="endpoint-details" id="card-update-lead">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros</div>
           <div class="field-group">
-            <label>ID do Lead (URL Param)</label>
-            <input type="text" id="param-update-lead-id" placeholder="Ex: new_lead_xyz" value="new_lead_xyz">
+            <label>ID do Lead</label>
+            <input type="text" id="param-update-lead-id" placeholder="Insira o ID do lead" value="">
           </div>
           <div class="field-group">
-            <label>JSON Body</label>
-            <textarea id="body-update-lead" rows="7">{
-  "name": "",
-  "company": "",
-  "value": 0,
-  "source": "",
-  "stage": ""
+            <label>Corpo JSON</label>
+            <textarea id="body-update-lead" rows="9">{
+  "name": "Maria Oliveira Alterada",
+  "company": "Unichristus",
+  "value": 9000,
+  "source": "instagram",
+  "stage": "negotiating",
+  "phone": "(85) 91234-5678",
+  "temperature": "warm",
+  "priority": "medium",
+  "custom_notes": "Pediu mais prazo para envio de documentos."
 }</textarea>
           </div>
           <button class="btn-test" onclick="testEndpoint('PUT', '/api/leads/', 'body-update-lead', 'param-update-lead-id', 'res-update-lead')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec update_lead.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-update-lead">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-update-lead">-</span>
             </div>
-            <div class="response-body" id="res-update-lead">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-update-lead">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -670,28 +849,33 @@
     <div class="endpoint-header" onclick="toggleDetails('card-delete-lead')">
       <span class="method-badge delete">DELETE</span>
       <span class="endpoint-path">/api/leads/:id</span>
-      <span class="endpoint-desc">Remover um lead definitivamente</span>
+      <span class="endpoint-desc">Deletar lead permanentemente</span>
       <i class="fa-solid fa-chevron-down endpoint-chevron" id="chevron-card-delete-lead"></i>
     </div>
     <div class="endpoint-details" id="card-delete-lead">
       <div class="grid-details">
         <div>
-          <div class="detail-section-title"><i class="fa-solid fa-circle-info"></i> Parâmetros</div>
+          <div class="detail-section-title"><i class="fa-solid fa-terminal"></i> Parâmetros</div>
           <div class="field-group">
-            <label>ID do Lead (URL Param)</label>
-            <input type="text" id="param-delete-lead-id" placeholder="Ex: new_lead_xyz" value="">
+            <label>ID do Lead</label>
+            <input type="text" id="param-delete-lead-id" placeholder="Insira o ID do lead" value="">
           </div>
           <button class="btn-test" onclick="testEndpoint('DELETE', '/api/leads/', null, 'param-delete-lead-id', 'res-delete-lead')">
-            <i class="fa-solid fa-paper-plane"></i> Enviar Requisição
+            <i class="fa-solid fa-terminal"></i> exec delete_lead.sh
           </button>
         </div>
         <div>
-          <div class="response-wrapper">
-            <div class="response-header">
-              <span>Resposta</span>
-              <span class="status-code" id="status-res-delete-lead">-</span>
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">output.json</span>
+              <span class="status-badge neutral" id="status-res-delete-lead">-</span>
             </div>
-            <div class="response-body" id="res-delete-lead">// A resposta em tempo real aparecerá aqui...</div>
+            <div class="terminal-body" id="res-delete-lead">// Aguardando requisição...</div>
           </div>
         </div>
       </div>
@@ -727,9 +911,9 @@
     const resBodyEl = document.getElementById(responseId);
     const statusEl = document.getElementById('status-' + responseId);
     resBodyEl.textContent = 'Carregando requisição...';
-    resBodyEl.style.color = '#e5e7eb';
-    statusEl.textContent = 'Carregando...';
-    statusEl.className = 'status-code';
+    resBodyEl.style.color = '#e2e8f0';
+    statusEl.textContent = 'executing...';
+    statusEl.className = 'status-badge neutral';
 
     let url = endpoint;
     if (paramId) {
@@ -739,7 +923,7 @@
         resBodyEl.textContent = '// Erro: ID obrigatório ausente';
         resBodyEl.style.color = '#ef4444';
         statusEl.textContent = 'Erro';
-        statusEl.classList.add('error');
+        statusEl.className = 'status-badge error';
         return;
       }
       url += val;
@@ -761,7 +945,7 @@
         resBodyEl.textContent = '// Erro de Sintaxe JSON:\n' + err.message;
         resBodyEl.style.color = '#ef4444';
         statusEl.textContent = 'Erro JSON';
-        statusEl.classList.add('error');
+        statusEl.className = 'status-badge error';
         return;
       }
     }
@@ -773,14 +957,15 @@
       const duration = Math.round(endTime - startTime);
 
       statusEl.textContent = `${res.status} ${res.statusText} (${duration}ms)`;
+      statusEl.className = 'status-badge';
       
       if (res.ok) {
         statusEl.classList.add('success');
-        resBodyEl.style.color = '#34d399';
+        resBodyEl.style.color = '#38bdf8';
         showToast('Requisição executada com sucesso!');
       } else {
         statusEl.classList.add('error');
-        resBodyEl.style.color = '#f87171';
+        resBodyEl.style.color = '#ef4444';
         showToast('A API respondeu com um erro.', 'error');
       }
 
@@ -796,7 +981,7 @@
       resBodyEl.textContent = '// Erro de Conexão com o Servidor:\n' + err.message;
       resBodyEl.style.color = '#ef4444';
       statusEl.textContent = 'Falha de Rede';
-      statusEl.classList.add('error');
+      statusEl.className = 'status-badge error';
     }
   }
 </script>

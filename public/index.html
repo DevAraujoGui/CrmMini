@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CRMini</title>
+  <title>LeadBoard</title>
   <link rel="icon" type="image/png" href="assets/Logos/Icon.png"  >
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -16,7 +16,7 @@
 <div id="auth-screen" class="auth-bg">
   <div class="auth-card">
     <div style="display:flex;justify-content:center;margin-bottom:2rem;">
-      <img src="assets/Logos/Logo.png" alt="CRMini Logo" style="height: 150px; width: auto; object-fit: contain;">
+      <img src="assets/Logos/Logo.png" alt="LeadBoard Logo" style="height: 150px; width: auto; object-fit: contain;">
     </div>
 
     <!-- LOGIN -->
@@ -68,25 +68,25 @@
     <div id="sidebar">
       <div class="sidebar-logo">
         <img src="assets/Logos/Icon.png" alt="Icon" style="width:34px; height:34px; object-fit: contain; border-radius: 8px;">
-        <span>CR<b>Mini</b></span>
+        <span>Lead<b>Board</b></span>
       </div>
 
       <nav>
         <button class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
-          <span class="icon"><i class="fa-solid fa-chart-line"></i></span> Dashboard
+          <span class="icon"><i class="fa-solid fa-chart-line"></i></span><span class="nav-label">Dashboard</span>
         </button>
         <button class="nav-item" onclick="showPage('users')" id="nav-users">
-          <span class="icon"><i class="fa-solid fa-users"></i></span> Usuários
+          <span class="icon"><i class="fa-solid fa-users"></i></span><span class="nav-label">Usuários</span>
           <span class="nav-badge" id="user-count-badge">0</span>
         </button>
         <button class="nav-item" onclick="showPage('pipeline')" id="nav-pipeline">
-          <span class="icon"><i class="fa-solid fa-diagram-project"></i></span> Pipeline
+          <span class="icon"><i class="fa-solid fa-diagram-project"></i></span><span class="nav-label">Pipeline</span>
         </button>
         <button class="nav-item" onclick="showPage('whatsapp')" id="nav-whatsapp">
-          <span class="icon"><i class="fa-brands fa-whatsapp"></i></span> WhatsApp
+          <span class="icon"><i class="fa-brands fa-whatsapp"></i></span><span class="nav-label">WhatsApp</span>
         </button>
         <button class="nav-item" onclick="showPage('settings')" id="nav-settings">
-          <span class="icon"><i class="fa-solid fa-gear"></i></span> Configurações
+          <span class="icon"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Configurações</span>
         </button>
       </nav>
 
@@ -105,9 +105,15 @@
     <div id="main">
       <!-- Header -->
       <div id="header">
-        <div>
-          <div class="page-title" id="header-title">Dashboard</div>
-          <div style="font-size:.75rem;color:#6b7280;margin-top:2px" id="header-sub">Visão geral do sistema</div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <!-- Sidebar Toggle Button -->
+          <button id="sidebar-toggle" onclick="toggleSidebar()" style="background: transparent; border: 1px solid var(--border); border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); transition: all 0.15s ease;">
+            <i class="fa-solid fa-bars" id="toggle-icon"></i>
+          </button>
+          <div>
+            <div class="page-title" id="header-title">Dashboard</div>
+            <div style="font-size:.75rem;color:#6b7280;margin-top:2px" id="header-sub">Visão geral do sistema</div>
+          </div>
         </div>
         <button class="btn-logout" onclick="handleLogout()">
           <i class="fa-solid fa-right-from-bracket"></i> Sair
@@ -309,35 +315,102 @@
           <div class="kanban-board">
             
             <!-- Coluna 1 -->
-            <div class="kanban-column" id="col-new" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondrop="dropLead(event, 'new')">
+            <div class="kanban-column" id="col-new">
               <div class="kanban-column-header">
-                <h3>Novos Leads</h3>
-                <span class="kanban-count" id="kanban-count-new">0</span>
+                <div class="kanban-column-header-main">
+                  <span class="kanban-dot new"></span>
+                  <h3>Novos Leads</h3>
+                  <span class="kanban-count" id="kanban-count-new">0</span>
+                </div>
+                <div class="kanban-column-subtitle" id="kanban-val-new">R$ 0</div>
               </div>
               <div class="kanban-cards" id="kanban-cards-new">
                 <!-- Dynamically populated -->
               </div>
+              <div class="kanban-column-footer">
+                <button class="btn-kanban-add" onclick="openQuickAdd('new')">
+                  <i class="fa-solid fa-plus"></i> Novo
+                </button>
+              </div>
             </div>
 
             <!-- Coluna 2 -->
-            <div class="kanban-column" id="col-negotiating" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondrop="dropLead(event, 'negotiating')">
+            <div class="kanban-column" id="col-negotiating">
               <div class="kanban-column-header">
-                <h3>Em Negociação</h3>
-                <span class="kanban-count" id="kanban-count-negotiating">0</span>
+                <div class="kanban-column-header-main">
+                  <span class="kanban-dot negotiating"></span>
+                  <h3>Em Negociação</h3>
+                  <span class="kanban-count" id="kanban-count-negotiating">0</span>
+                </div>
+                <div class="kanban-column-subtitle" id="kanban-val-negotiating">R$ 0</div>
               </div>
               <div class="kanban-cards" id="kanban-cards-negotiating">
                 <!-- Dynamically populated -->
               </div>
+              <div class="kanban-column-footer">
+                <button class="btn-kanban-add" onclick="openQuickAdd('negotiating')">
+                  <i class="fa-solid fa-plus"></i> Novo
+                </button>
+              </div>
             </div>
 
-            <!-- Coluna 3 -->
-            <div class="kanban-column" id="col-closed" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondrop="dropLead(event, 'closed')">
+            <!-- Coluna 3 (Nova) -->
+            <div class="kanban-column" id="col-proposal">
               <div class="kanban-column-header">
-                <h3>Fechados</h3>
-                <span class="kanban-count" id="kanban-count-closed">0</span>
+                <div class="kanban-column-header-main">
+                  <span class="kanban-dot" style="background-color: #a855f7;"></span>
+                  <h3>Proposta Enviada</h3>
+                  <span class="kanban-count" id="kanban-count-proposal">0</span>
+                </div>
+                <div class="kanban-column-subtitle" id="kanban-val-proposal">R$ 0</div>
+              </div>
+              <div class="kanban-cards" id="kanban-cards-proposal">
+                <!-- Dynamically populated -->
+              </div>
+              <div class="kanban-column-footer">
+                <button class="btn-kanban-add" onclick="openQuickAdd('proposal')">
+                  <i class="fa-solid fa-plus"></i> Novo
+                </button>
+              </div>
+            </div>
+
+            <!-- Coluna 4 -->
+            <div class="kanban-column" id="col-closed">
+              <div class="kanban-column-header">
+                <div class="kanban-column-header-main">
+                  <span class="kanban-dot closed"></span>
+                  <h3>Fechados</h3>
+                  <span class="kanban-count" id="kanban-count-closed">0</span>
+                </div>
+                <div class="kanban-column-subtitle" id="kanban-val-closed">R$ 0</div>
               </div>
               <div class="kanban-cards" id="kanban-cards-closed">
                 <!-- Dynamically populated -->
+              </div>
+              <div class="kanban-column-footer">
+                <button class="btn-kanban-add" onclick="openQuickAdd('closed')">
+                  <i class="fa-solid fa-plus"></i> Novo
+                </button>
+              </div>
+            </div>
+
+            <!-- Coluna 5 (Nova) -->
+            <div class="kanban-column" id="col-winback">
+              <div class="kanban-column-header">
+                <div class="kanban-column-header-main">
+                  <span class="kanban-dot" style="background-color: #ef4444;"></span>
+                  <h3>Recuperação</h3>
+                  <span class="kanban-count" id="kanban-count-winback">0</span>
+                </div>
+                <div class="kanban-column-subtitle" id="kanban-val-winback">R$ 0</div>
+              </div>
+              <div class="kanban-cards" id="kanban-cards-winback">
+                <!-- Dynamically populated -->
+              </div>
+              <div class="kanban-column-footer">
+                <button class="btn-kanban-add" onclick="openQuickAdd('winback')">
+                  <i class="fa-solid fa-plus"></i> Novo
+                </button>
               </div>
             </div>
 
@@ -352,7 +425,7 @@
               <div class="empty-state">
                 <div class="empty-icon" style="color: #25d366; opacity: 1;"><i class="fa-brands fa-whatsapp"></i></div>
                 <p style="font-weight:600;color:#166534;margin:0 0 .4rem;">Conectar WhatsApp</p>
-                <p style="font-size:.85rem;margin:0;">Escaneie o QR Code para sincronizar suas conversas com o CRMini.<br>(Integração em desenvolvimento)</p>
+                <p style="font-size:.85rem;margin:0;">Escaneie o QR Code para sincronizar suas conversas com o LeadBoard.<br>(Integração em desenvolvimento)</p>
                 <div style="margin-top: 2rem; background: white; padding: 1rem; border-radius: 12px; border: 1.5px solid var(--border); display: inline-block;">
                   <div style="width: 180px; height: 180px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
                     <i class="fa-solid fa-qrcode fa-5x"></i>
@@ -406,7 +479,7 @@
                 <h2><i class="fa-solid fa-database" style="color: var(--indigo); margin-right: 8px;"></i> Gerenciamento de Dados</h2>
               </div>
               <div class="card-body" style="display:flex; flex-direction:column; gap:1rem;">
-                <p style="font-size: 0.85rem; color: var(--muted); margin: 0;">Exporte seus dados do CRMini para backup ou importe a partir de um arquivo JSON.</p>
+                <p style="font-size: 0.85rem; color: var(--muted); margin: 0;">Exporte seus dados do LeadBoard para backup ou importe a partir de um arquivo JSON.</p>
                 <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
                   <button class="btn-primary" onclick="exportData()" style="flex:1; background:linear-gradient(135deg,#10b981,#059669); box-shadow:0 4px 14px rgba(16,185,129,0.35);">
                     <i class="fa-solid fa-download"></i> Exportar JSON
@@ -492,44 +565,92 @@
 
 <!-- LEAD MODAL -->
 <div id="lead-modal" class="modal-overlay" style="display:none;" onclick="closeLeadModalOutside(event)">
-  <div class="modal">
-    <h3 id="lead-modal-title">Novo Lead</h3>
+  <div class="modal" style="max-width: 580px;">
+    <!-- Large Page Title input like Notion -->
+    <input type="text" id="modal-lead-name" placeholder="Sem título" style="font-size: 1.6rem; font-weight: 700; border: none; outline: none; background: transparent; width: 100%; padding: 0.2rem 0; margin-bottom: 1.5rem; color: var(--text);" />
+    
     <input type="hidden" id="modal-lead-id" />
-    <div id="lead-id-container" style="display:none; font-size:.8rem; color:var(--muted); margin-bottom:.75rem; font-family:'JetBrains Mono', monospace; background:#f3f4f6; padding:4px 8px; border-radius:6px; display:inline-block; border: 1px solid var(--border);">
-      ID: <span id="lead-id-display" style="font-weight:600; color:var(--text);"></span>
+    
+    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+      
+      <!-- Lead ID Property -->
+      <div id="lead-id-container" class="field" style="display:none;">
+        <label><i class="fa-solid fa-fingerprint" style="width: 16px;"></i> ID</label>
+        <span id="lead-id-display" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--muted); padding-left: 0.5rem;"></span>
+      </div>
+      
+      <!-- Company Property -->
+      <div class="field">
+        <label><i class="fa-regular fa-building" style="width: 16px;"></i> Empresa</label>
+        <input type="text" id="modal-lead-company" placeholder="Ex: Tech Solutions LTDA" />
+      </div>
+      
+      <!-- Value Property -->
+      <div class="field">
+        <label><i class="fa-solid fa-wallet" style="width: 16px;"></i> Valor (R$)</label>
+        <input type="number" id="modal-lead-value" placeholder="Vazio" />
+      </div>
+      
+      <!-- Source Property -->
+      <div class="field">
+        <label><i class="fa-solid fa-arrow-up-right-from-square" style="width: 16px;"></i> Origem</label>
+        <select id="modal-lead-source">
+          <option value="whatsapp">WhatsApp</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+          <option value="outros">Outros</option>
+        </select>
+      </div>
+      
+      <!-- Stage Property -->
+      <div class="field">
+        <label><i class="fa-solid fa-circle-nodes" style="width: 16px;"></i> Etapa</label>
+        <select id="modal-lead-stage">
+          <option value="new">Novos Leads</option>
+          <option value="negotiating">Em Negociação</option>
+          <option value="proposal">Proposta Enviada</option>
+          <option value="closed">Fechados</option>
+          <option value="winback">Recuperação</option>
+        </select>
+      </div>
+
+      <!-- Phone Property -->
+      <div class="field">
+        <label><i class="fa-solid fa-phone" style="width: 16px;"></i> WhatsApp/Telefone</label>
+        <input type="text" id="modal-lead-phone" placeholder="Ex: (85) 99999-9999" />
+      </div>
+
+      <!-- Temperature Property -->
+      <div class="field">
+        <label><i class="fa-solid fa-temperature-half" style="width: 16px;"></i> Temperatura</label>
+        <select id="modal-lead-temperature">
+          <option value="hot">🔥 Quente (Pronto para fechar)</option>
+          <option value="warm">⚡ Morno (Interessado)</option>
+          <option value="cold">❄️ Frio (Pouco engajado)</option>
+        </select>
+      </div>
+
+      <!-- Priority Property -->
+      <div class="field">
+        <label><i class="fa-solid fa-triangle-exclamation" style="width: 16px;"></i> Prioridade</label>
+        <select id="modal-lead-priority">
+          <option value="high">🔴 Alta</option>
+          <option value="medium">🟡 Média</option>
+          <option value="low">🟢 Baixa</option>
+        </select>
+      </div>
+
+      <!-- Custom Notes Property -->
+      <div class="field" style="grid-template-columns: 140px 1fr; align-items: start;">
+        <label style="padding-top: 4px;"><i class="fa-regular fa-comment-dots" style="width: 16px;"></i> Anotações</label>
+        <textarea id="modal-lead-notes" placeholder="Adicione observações, histórico de conversas ou informações adicionais sobre o lead..." style="border: 1px solid var(--border); background: var(--surface); padding: 0.5rem; border-radius: 6px; font-size: 0.88rem; color: var(--text); outline: none; width: 100%; min-height: 80px; resize: vertical; transition: border-color 0.15s;"></textarea>
+      </div>
+      
     </div>
-    <div class="field" style="margin-bottom:.9rem;">
-      <label>Nome do Lead</label>
-      <input type="text" id="modal-lead-name" placeholder="Ex: João Silva" />
-    </div>
-    <div class="field" style="margin-bottom:.9rem;">
-      <label>Empresa</label>
-      <input type="text" id="modal-lead-company" placeholder="Ex: Tech Solutions LTDA" />
-    </div>
-    <div class="field" style="margin-bottom:.9rem;">
-      <label>Valor estimado (R$)</label>
-      <input type="number" id="modal-lead-value" placeholder="Ex: 12000" />
-    </div>
-    <div class="field" style="margin-bottom:.9rem;">
-      <label>Origem</label>
-      <select id="modal-lead-source" style="width: 100%; padding: .65rem .9rem; border: 1.5px solid var(--border); border-radius: 10px; font-size: .92rem; color: var(--text); background: #fafafe; outline: none;">
-        <option value="whatsapp">WhatsApp</option>
-        <option value="instagram">Instagram</option>
-        <option value="facebook">Facebook</option>
-        <option value="outros">Outros</option>
-      </select>
-    </div>
-    <div class="field" style="margin-bottom:.9rem;">
-      <label>Etapa</label>
-      <select id="modal-lead-stage" style="width: 100%; padding: .65rem .9rem; border: 1.5px solid var(--border); border-radius: 10px; font-size: .92rem; color: var(--text); background: #fafafe; outline: none;">
-        <option value="new">Novos Leads</option>
-        <option value="negotiating">Em Negociação</option>
-        <option value="closed">Fechados</option>
-      </select>
-    </div>
-    <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
-      <button class="btn-sm btn-delete" id="btn-delete-lead" onclick="deleteLeadFromModal()" style="display:none; padding: .6rem 1.1rem; font-size: .88rem;"><i class="fa-solid fa-trash"></i> Excluir</button>
-      <div style="display:flex; gap:.75rem; margin-left:auto;">
+    
+    <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; border-top: 1px solid var(--border); padding-top: 1.2rem; margin-top: 1.5rem;">
+      <button class="btn-sm btn-delete" id="btn-delete-lead" onclick="deleteLeadFromModal()" style="padding: .5rem 1rem; font-size: .8rem;"><i class="fa-solid fa-trash"></i> Excluir</button>
+      <div style="display:flex; gap:.6rem; margin-left:auto;">
         <button class="btn-cancel" onclick="closeLeadModal()">Cancelar</button>
         <button class="btn-confirm" onclick="saveLead()">Salvar</button>
       </div>

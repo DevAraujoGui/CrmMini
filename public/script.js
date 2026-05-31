@@ -122,6 +122,45 @@ function handleLogout() {
   showToast('Até logo!');
 }
 
+// ============================================================
+// NAVIGATION
+// ============================================================
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('main');
+  const icon = document.getElementById('toggle-icon');
+  
+  if (!sidebar || !main) return;
+  
+  const isCollapsed = sidebar.classList.toggle('collapsed');
+  main.classList.toggle('sidebar-collapsed', isCollapsed);
+  
+  if (icon) {
+    if (isCollapsed) {
+      icon.className = 'fa-solid fa-angles-right';
+    } else {
+      icon.className = 'fa-solid fa-bars';
+    }
+  }
+  
+  localStorage.setItem('crmini_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+}
+
+function initSidebarState() {
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('main');
+  const icon = document.getElementById('toggle-icon');
+  const collapsedSaved = localStorage.getItem('crmini_sidebar_collapsed') === 'true';
+  
+  if (sidebar && main) {
+    sidebar.classList.toggle('collapsed', collapsedSaved);
+    main.classList.toggle('sidebar-collapsed', collapsedSaved);
+    if (icon) {
+      icon.className = collapsedSaved ? 'fa-solid fa-angles-right' : 'fa-solid fa-bars';
+    }
+  }
+}
+// Run on app load in goToApp
 async function goToApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
@@ -130,12 +169,9 @@ async function goToApp() {
     document.getElementById('sidebar-name').textContent = user.name.split(' ')[0];
     document.getElementById('sidebar-avatar').textContent = user.name.charAt(0).toUpperCase();
   }
+  initSidebarState();
   await showPage('dashboard');
 }
-
-// ============================================================
-// NAVIGATION
-// ============================================================
 const pageConfig = {
   dashboard: { title: 'Dashboard', sub: 'Visão geral do sistema' },
   users:     { title: 'Usuários',  sub: 'Gerenciar usuários do sistema' },
@@ -291,15 +327,24 @@ async function updateDashboardStats() {
 // ============================================================
 async function renderKanban() {
   const leads = await getLeads();
-  const stages = ['new', 'negotiating', 'closed'];
+  const stages = ['new', 'negotiating', 'proposal', 'closed', 'winback'];
   
   stages.forEach(stage => {
     const colCards = document.getElementById(`kanban-cards-${stage}`);
     const colCount = document.getElementById(`kanban-count-${stage}`);
+    const colVal = document.getElementById(`kanban-val-${stage}`);
     if (!colCards || !colCount) return;
     
-    const stageLeads = leads.filter(l => l.stage === stage);
+    // Sort leads by sort_order
+    const stageLeads = leads.filter(l => l.stage === stage).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
     colCount.textContent = stageLeads.length;
+    
+    // Calculate total value for this column
+    const totalValue = stageLeads.reduce((sum, l) => sum + (parseFloat(l.value) || 0), 0);
+    if (colVal) {
+      colVal.textContent = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+    }
+
     colCards.innerHTML = '';
     
     stageLeads.forEach(lead => {
@@ -307,111 +352,275 @@ async function renderKanban() {
       card.className = 'kanban-card';
       card.draggable = true;
       card.id = `lead-card-${lead.id}`;
-      card.setAttribute('ondragstart', `dragLead(event, '${lead.id}')`);
-      card.setAttribute('onclick', `openLeadModal('${lead.id}')`);
+      card.dataset.id = lead.id;
       
       const formattedValue = Number(lead.value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
       const sourceClass = lead.source || 'outros';
       const sourceLabel = sourceClass === 'outros' ? 'Outros' : sourceClass.charAt(0).toUpperCase() + sourceClass.slice(1);
       
+      // Determine temperature badge
+      let tempBadge = '';
+      if (lead.temperature === 'hot') {
+        tempBadge = '<span class="lead-badge temp-hot"><i class="fa-solid fa-fire"></i> Quente</span>';
+      } else if (lead.temperature === 'warm') {
+        tempBadge = '<span class="lead-badge temp-warm"><i class="fa-solid fa-bolt"></i> Morno</span>';
+      } else if (lead.temperature === 'cold') {
+        tempBadge = '<span class="lead-badge temp-cold"><i class="fa-solid fa-snowflake"></i> Frio</span>';
+      }
+
+      // Determine priority badge
+      let priorityBadge = '';
+      if (lead.priority === 'high') {
+        priorityBadge = '<span class="lead-badge prio-high">Alta</span>';
+      } else if (lead.priority === 'medium') {
+        priorityBadge = '<span class="lead-badge prio-medium">Média</span>';
+      } else if (lead.priority === 'low') {
+        priorityBadge = '<span class="lead-badge prio-low">Baixa</span>';
+      }
+
+      // Custom phone number action icon if exists
+      const phoneHtml = lead.phone ? `<a href="https://wa.me/${lead.phone.replace(/\D/g, '')}" target="_blank" class="kanban-card-phone" onclick="event.stopPropagation();" style="color: #25d366; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; text-decoration: none;"><i class="fa-brands fa-whatsapp"></i> ${escHtml(lead.phone)}</a>` : '';
+
+      // Notes preview truncated
+      const notesPreview = lead.custom_notes ? `<div class="kanban-card-notes-preview" title="${escHtml(lead.custom_notes)}">${escHtml(lead.custom_notes)}</div>` : '';
+
       card.innerHTML = `
-        <div style="margin-bottom: .75rem;">
+        <div style="margin-bottom: .5rem; display: flex; justify-content: space-between; align-items: center;">
           <span class="kanban-tag ${sourceClass}">${sourceLabel}</span>
-        </div>
-        <div class="kanban-card-title">${escHtml(lead.name)}</div>
-        <div class="kanban-card-company">${escHtml(lead.company)}</div>
-        <div class="kanban-card-value">${formattedValue}</div>
-        <div class="kanban-card-footer">
-          <div></div>
           <span class="kanban-date">${lead.date || ''}</span>
         </div>
+        <div class="kanban-card-title">${escHtml(lead.name)}</div>
+        <div class="kanban-card-company"><i class="fa-regular fa-building" style="font-size: 0.72rem; opacity: 0.7;"></i> ${escHtml(lead.company)}</div>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0.6rem;">
+          ${tempBadge}
+          ${priorityBadge}
+        </div>
+
+        ${notesPreview}
+        
+        <div class="kanban-card-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+          <div class="kanban-card-value">${formattedValue}</div>
+          ${phoneHtml}
+        </div>
       `;
+      
+      // Events for individual cards
+      card.addEventListener('dragstart', (e) => {
+        draggedLeadId = lead.id;
+        card.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', lead.id);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        draggedLeadId = null;
+        removePlaceholders();
+      });
+
+      card.addEventListener('click', (e) => {
+        openLeadModal(lead.id);
+      });
+
       colCards.appendChild(card);
+    });
+  });
+
+  setupColumnDragListeners();
+}
+
+// ============================================================
+// DRAG AND DROP HANDLERS (NOTION STYLE)
+// ============================================================
+let draggedLeadId = null;
+let activePlaceholder = null;
+
+function removePlaceholders() {
+  const placeholders = document.querySelectorAll('.kanban-placeholder');
+  placeholders.forEach(p => p.remove());
+  activePlaceholder = null;
+  
+  // Remove drag over highlights from columns
+  const cols = document.querySelectorAll('.kanban-column');
+  cols.forEach(c => c.classList.remove('drag-over'));
+}
+
+function setupColumnDragListeners() {
+  const columns = document.querySelectorAll('.kanban-column');
+  
+  columns.forEach(col => {
+    const stage = col.id.replace('col-', '');
+    const cardsContainer = col.querySelector('.kanban-cards');
+    
+    col.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      
+      col.classList.add('drag-over');
+      
+      // Find where to insert placeholder
+      const afterElement = getDragAfterElement(cardsContainer, e.clientY);
+      
+      // Get or create placeholder
+      if (!activePlaceholder) {
+        activePlaceholder = document.createElement('div');
+        activePlaceholder.className = 'kanban-placeholder';
+        // Height of the placeholder matches typical dragging card height
+        activePlaceholder.style.height = '100px';
+        activePlaceholder.style.marginBottom = '0.6rem';
+      }
+      
+      if (afterElement == null) {
+        cardsContainer.appendChild(activePlaceholder);
+      } else {
+        cardsContainer.insertBefore(activePlaceholder, afterElement);
+      }
+    });
+    
+    col.addEventListener('dragleave', (e) => {
+      // Only remove highlight if leaving the column boundary
+      const rect = col.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+        col.classList.remove('drag-over');
+      }
+    });
+    
+    col.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      
+      const leadId = draggedLeadId || e.dataTransfer.getData('text/plain');
+      if (!leadId) return;
+
+      // OPTIMISTIC UI: Find the dragged card element and insert it directly into the DOM
+      const cardEl = document.getElementById(`lead-card-${leadId}`);
+      const cardsContainer = col.querySelector('.kanban-cards');
+      if (cardEl && cardsContainer) {
+        if (activePlaceholder && activePlaceholder.parentNode === cardsContainer) {
+          cardsContainer.insertBefore(cardEl, activePlaceholder);
+        } else {
+          const afterElement = getDragAfterElement(cardsContainer, e.clientY);
+          if (afterElement == null) {
+            cardsContainer.appendChild(cardEl);
+          } else {
+            cardsContainer.insertBefore(cardEl, afterElement);
+          }
+        }
+      }
+      
+      // Clean up drag UI elements immediately
+      removePlaceholders();
+      
+      // Process database updates asynchronously in the background
+      try {
+        const leads = await getLeads();
+        const draggedLead = leads.find(l => l.id === leadId);
+        if (!draggedLead) return;
+        
+        // Recalculate positions based on the new visual order in the DOM
+        const targetCardElements = Array.from(cardsContainer.querySelectorAll('.kanban-card'));
+        const newTargetIndex = targetCardElements.indexOf(cardEl);
+        
+        let targetLeads = leads
+          .filter(l => l.stage === stage && l.id !== leadId)
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+        
+        // Insert dragged lead at calculated visual position
+        targetLeads.splice(newTargetIndex !== -1 ? newTargetIndex : targetLeads.length, 0, { ...draggedLead, stage });
+        
+        // Build reorder updates array
+        const orders = targetLeads.map((lead, index) => ({
+          id: lead.id,
+          stage: stage,
+          sort_order: index + 1
+        }));
+        
+        // If it came from another stage, update that stage's ordering to prevent gaps
+        if (draggedLead.stage !== stage) {
+          const oldStageLeads = leads
+            .filter(l => l.stage === draggedLead.stage && l.id !== leadId)
+            .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+            
+          oldStageLeads.forEach((lead, index) => {
+            orders.push({
+              id: lead.id,
+              stage: draggedLead.stage,
+              sort_order: index + 1
+            });
+          });
+        }
+        
+        // Send batch update to API
+        let res = await fetch('/api/leads/reorder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orders })
+        });
+        
+        if (!res.ok) {
+          // Fallback to single lead stage update
+          draggedLead.stage = stage;
+          res = await fetch(`/api/leads/${leadId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(draggedLead)
+          });
+        }
+        
+        if (res.ok) {
+          showToast(`Lead "${draggedLead.name}" movido com sucesso`);
+        } else {
+          showToast('Erro ao salvar nova posição', 'error');
+          // If save failed, revert UI by re-rendering
+          await renderKanban();
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao salvar nova posição', 'error');
+        await renderKanban();
+      }
+      
+      // Update totals/counts and background data structures without a full card destruction/re-render
+      const leads = await getLeads();
+      const stages = ['new', 'negotiating', 'proposal', 'closed', 'winback'];
+      stages.forEach(s => {
+        const colCount = document.getElementById(`kanban-count-${s}`);
+        const colVal = document.getElementById(`kanban-val-${s}`);
+        if (!colCount) return;
+        
+        const stageLeads = leads.filter(l => l.stage === s);
+        colCount.textContent = stageLeads.length;
+        
+        const totalValue = stageLeads.reduce((sum, l) => sum + (parseFloat(l.value) || 0), 0);
+        if (colVal) {
+          colVal.textContent = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+        }
+      });
+      
+      await updateDashboardStats();
     });
   });
 }
 
-// ============================================================
-// DRAG AND DROP HANDLERS
-// ============================================================
-let draggedLeadId = null;
-
-function dragLead(event, leadId) {
-  draggedLeadId = leadId;
-  event.dataTransfer.setData('text/plain', leadId);
-  setTimeout(() => {
-    const el = document.getElementById(`lead-card-${leadId}`);
-    if (el) el.style.opacity = '0.4';
-  }, 0);
-}
-
-document.addEventListener('dragend', () => {
-  if (draggedLeadId) {
-    const el = document.getElementById(`lead-card-${draggedLeadId}`);
-    if (el) el.style.opacity = '1';
-    draggedLeadId = null;
-  }
-});
-
-function allowDrop(event) {
-  event.preventDefault();
-}
-
-function dragEnter(event) {
-  event.preventDefault();
-  const col = event.currentTarget;
-  col.style.background = '#eef2ff';
-  col.style.borderColor = '#a5b4fc';
-}
-
-function dragLeave(event) {
-  const col = event.currentTarget;
-  col.style.background = '#f8f8ff';
-  col.style.borderColor = 'var(--border)';
-}
-
-async function dropLead(event, targetStage) {
-  event.preventDefault();
-  const col = event.currentTarget;
-  col.style.background = '#f8f8ff';
-  col.style.borderColor = 'var(--border)';
+// Find closest element relative to pointer position
+function getDragAfterElement(container, y) {
+  const draggableElements = Array.from(container.querySelectorAll('.kanban-card:not(.dragging)'));
   
-  const leadId = draggedLeadId || event.dataTransfer.getData('text/plain');
-  if (!leadId) return;
-  
-  try {
-    const leads = await getLeads();
-    const idx = leads.findIndex(l => l.id === leadId);
-    if (idx !== -1 && leads[idx].stage !== targetStage) {
-      const lead = leads[idx];
-      lead.stage = targetStage;
-      
-      const res = await fetch(`/api/leads/${leadId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(lead)
-      });
-      if (res.ok) {
-        showToast(`Lead "${lead.name}" movido para ${getStageName(targetStage)}`);
-      } else {
-        showToast('Erro ao mover lead', 'error');
-      }
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
     }
-  } catch (err) {
-    showToast('Erro de conexão', 'error');
-  }
-  
-  draggedLeadId = null;
-  await renderKanban();
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-function getStageName(stage) {
-  switch (stage) {
-    case 'new': return 'Novos Leads';
-    case 'negotiating': return 'Em Negociação';
-    case 'closed': return 'Fechados';
-    default: return stage;
-  }
+function openQuickAdd(stage) {
+  openLeadModal(null);
+  document.getElementById('modal-lead-stage').value = stage;
 }
 
 // ============================================================
@@ -649,6 +858,10 @@ async function openLeadModal(leadId = null) {
   document.getElementById('modal-lead-value').value = '';
   document.getElementById('modal-lead-source').value = 'whatsapp';
   document.getElementById('modal-lead-stage').value = 'new';
+  document.getElementById('modal-lead-phone').value = '';
+  document.getElementById('modal-lead-temperature').value = 'warm';
+  document.getElementById('modal-lead-priority').value = 'medium';
+  document.getElementById('modal-lead-notes').value = '';
   
   const deleteBtn = document.getElementById('btn-delete-lead');
   const idContainer = document.getElementById('lead-id-container');
@@ -658,9 +871,8 @@ async function openLeadModal(leadId = null) {
     const leads = await getLeads();
     const lead = leads.find(l => l.id === leadId);
     if (lead) {
-      document.getElementById('lead-modal-title').textContent = 'Editar Lead';
       if (idContainer && idDisplay) {
-        idContainer.style.display = 'inline-block';
+        idContainer.style.display = 'grid'; // Align to the CSS grid in the new Notion property modal
         idDisplay.textContent = lead.id;
       }
       document.getElementById('modal-lead-name').value = lead.name;
@@ -668,12 +880,16 @@ async function openLeadModal(leadId = null) {
       document.getElementById('modal-lead-value').value = lead.value;
       document.getElementById('modal-lead-source').value = lead.source || 'whatsapp';
       document.getElementById('modal-lead-stage').value = lead.stage || 'new';
+      document.getElementById('modal-lead-phone').value = lead.phone || '';
+      document.getElementById('modal-lead-temperature').value = lead.temperature || 'warm';
+      document.getElementById('modal-lead-priority').value = lead.priority || 'medium';
+      document.getElementById('modal-lead-notes').value = lead.custom_notes || '';
       if (deleteBtn) deleteBtn.style.display = 'block';
     }
   } else {
-    document.getElementById('lead-modal-title').textContent = 'Novo Lead';
     if (idContainer) idContainer.style.display = 'none';
     if (deleteBtn) deleteBtn.style.display = 'none';
+    document.getElementById('modal-lead-name').placeholder = 'Novo Lead (Sem título)';
   }
   document.getElementById('lead-modal').style.display = 'flex';
 }
@@ -699,6 +915,10 @@ async function saveLead() {
   const value = parseFloat(document.getElementById('modal-lead-value').value) || 0;
   const source = document.getElementById('modal-lead-source').value;
   const stage = document.getElementById('modal-lead-stage').value;
+  const phone = document.getElementById('modal-lead-phone').value.trim();
+  const temperature = document.getElementById('modal-lead-temperature').value;
+  const priority = document.getElementById('modal-lead-priority').value;
+  const custom_notes = document.getElementById('modal-lead-notes').value.trim();
   
   if (!name || !company) {
     showToast('Nome e Empresa são obrigatórios', 'error');
@@ -711,7 +931,7 @@ async function saveLead() {
       const res = await fetch(`/api/leads/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, company, value, source, stage })
+        body: JSON.stringify({ name, company, value, source, stage, phone, temperature, priority, custom_notes })
       });
       if (!res.ok) {
         showToast('Erro ao atualizar lead', 'error');
@@ -727,6 +947,10 @@ async function saveLead() {
         value,
         source,
         stage,
+        phone,
+        temperature,
+        priority,
+        custom_notes,
         date: formatCurrentDate()
       };
       const res = await fetch('/api/leads', {
