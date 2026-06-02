@@ -8,7 +8,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dark.css">
 </head>
 <body>
 
@@ -84,6 +87,9 @@
         </button>
         <button class="nav-item" onclick="showPage('whatsapp')" id="nav-whatsapp">
           <span class="icon"><i class="fa-brands fa-whatsapp"></i></span><span class="nav-label">WhatsApp</span>
+        </button>
+        <button class="nav-item" onclick="showPage('ai-chat')" id="nav-ai-chat">
+          <span class="icon"><i class="fa-solid fa-robot"></i></span><span class="nav-label">Chat IA</span>
         </button>
         <button class="nav-item" onclick="showPage('settings')" id="nav-settings">
           <span class="icon"><i class="fa-solid fa-gear"></i></span><span class="nav-label">Configurações</span>
@@ -436,6 +442,51 @@
           </div>
         </div>
 
+        <!-- AI CHAT -->
+        <div id="page-ai-chat" class="fade-section" style="display:none;">
+          <div class="ai-chat-layout">
+            <!-- Config Bar -->
+            <div class="ai-chat-config-bar">
+              <div style="display:flex; align-items:center; gap:0.5rem; flex:1; min-width:240px;">
+                <span style="font-size:0.8rem; font-weight:600; color:var(--muted); text-transform:uppercase;">Provedor:</span>
+                <select id="ai-provider" style="border: 1px solid var(--border); background: var(--surface); padding: 0.4rem 0.6rem; border-radius: 6px; font-size: 0.85rem; color: var(--text); outline: none;">
+                  <option value="google">Google Gemini 2.5 Flash</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem; flex:2; min-width:280px;">
+                <span style="font-size:0.8rem; font-weight:600; color:var(--muted); text-transform:uppercase;">Chave API:</span>
+                <input type="password" id="ai-api-key" placeholder="Digite sua Gemini API Key" style="flex:1; border: 1px solid var(--border); background: var(--surface); padding: 0.4rem 0.6rem; border-radius: 6px; font-size: 0.85rem; color: var(--text); outline: none;" />
+                <button class="btn-confirm" onclick="saveAiConfig()" style="padding: 0.4rem 1rem;">Conectar</button>
+              </div>
+              <div>
+                <span id="ai-connection-status" class="ai-status-badge disconnected">
+                  <i class="fa-solid fa-circle-dot"></i> Desconectado
+                </span>
+              </div>
+            </div>
+
+            <!-- Chat Window -->
+            <div class="ai-chat-main">
+              <!-- Messages -->
+              <div class="ai-chat-messages" id="ai-chat-messages-container">
+                <div class="empty-state" id="ai-chat-empty-state">
+                  <div class="empty-icon" style="color: var(--indigo); opacity: 0.8;"><i class="fa-solid fa-robot"></i></div>
+                  <p style="font-weight:600; color:var(--indigo); margin:0 0 .4rem;">Assistente de IA do LeadBoard</p>
+                  <p style="font-size:.85rem; margin:0;">Insira sua API Key acima e comece a conversar com a Inteligência Artificial para analisar leads ou otimizar conversões.</p>
+                </div>
+              </div>
+
+              <!-- Input Area -->
+              <div class="ai-chat-input-area">
+                <input type="text" id="ai-chat-input-field" placeholder="Escreva sua mensagem aqui..." style="flex: 1;" />
+                <button class="btn-chat-send" onclick="sendAiMessage()">
+                  <i class="fa-solid fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- SETTINGS -->
         <div id="page-settings" class="fade-section" style="display:none;">
           <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
@@ -624,9 +675,10 @@
       <div class="field">
         <label><i class="fa-solid fa-temperature-half" style="width: 16px;"></i> Temperatura</label>
         <select id="modal-lead-temperature">
-          <option value="hot">🔥 Quente (Pronto para fechar)</option>
-          <option value="warm">⚡ Morno (Interessado)</option>
+          <option value="" disabled selected>Selecione uma opção</option>
           <option value="cold">❄️ Frio (Pouco engajado)</option>
+          <option value="warm">⚡ Morno (Interessado)</option>
+          <option value="hot">🔥 Quente (Pronto para fechar)</option>
         </select>
       </div>
 
@@ -634,9 +686,10 @@
       <div class="field">
         <label><i class="fa-solid fa-triangle-exclamation" style="width: 16px;"></i> Prioridade</label>
         <select id="modal-lead-priority">
-          <option value="high">🔴 Alta</option>
-          <option value="medium">🟡 Média</option>
+          <option value="" disabled selected>Selecione uma opção</option>
           <option value="low">🟢 Baixa</option>
+          <option value="medium">🟡 Média</option>
+          <option value="high">🔴 Alta</option>
         </select>
       </div>
 
@@ -658,6 +711,6 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<script type="module" src="js/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,213 @@
+/* Auth Container */
+.auth-bg {
+  min-height: 100vh;
+  background: #f7f7f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* App Containers */
+#app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar structure */
+#sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: var(--sidebar);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0.75rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  border-right: 1px solid var(--border);
+  transition: width 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.3s, border 0.3s;
+}
+
+#sidebar.collapsed {
+  width: 60px;
+  padding: 1.5rem 0.4rem;
+}
+
+#sidebar.collapsed .sidebar-logo span,
+#sidebar.collapsed .sidebar-user-info,
+#sidebar.collapsed .nav-badge {
+  display: none !important;
+}
+
+#sidebar.collapsed .nav-label {
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+#sidebar.collapsed .sidebar-logo {
+  justify-content: center;
+  padding: 0.5rem 0 1.5rem;
+}
+
+#sidebar.collapsed .sidebar-user {
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+#sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 0.45rem 0;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem .5rem 1.5rem;
+}
+
+.sidebar-logo span {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sidebar-logo span b {
+  color: var(--text);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem;
+}
+
+.sidebar-user-info p {
+  margin: 0;
+}
+
+.sidebar-user-info .u-name {
+  font-size: .85rem;
+  font-weight: 550;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-info .u-role {
+  font-size: .7rem;
+  color: var(--muted);
+}
+
+/* Main Content Area */
+#main {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  transition: margin-left 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#main.sidebar-collapsed {
+  margin-left: 60px;
+}
+
+/* Header */
+#header {
+  background: var(--bg);
+  padding: .75rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: background 0.3s, border 0.3s;
+}
+
+.page-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Content Container */
+#content {
+  padding: 2rem;
+  flex: 1;
+  background: var(--bg);
+  transition: background 0.3s;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: calc(100vh - 60px);
+}
+
+#page-pipeline {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Kanban Board Layout */
+.kanban-board {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 1.5rem;
+  height: calc(100vh - 180px);
+  align-items: flex-start;
+  user-select: none;
+  width: 100%;
+}
+
+.kanban-column {
+  background: var(--notion-column-bg);
+  border-radius: 10px;
+  width: 320px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  border: 1px solid var(--border);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  padding: 0.5rem;
+}
+
+.kanban-column-header {
+  padding: 0.75rem 0.6rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.kanban-column-header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kanban-column-footer {
+  padding: 0.25rem;
+}

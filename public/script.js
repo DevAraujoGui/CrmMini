@@ -360,14 +360,13 @@ async function renderKanban() {
       
       // Determine temperature badge
       let tempBadge = '';
-      if (lead.temperature === 'hot') {
-        tempBadge = '<span class="lead-badge temp-hot"><i class="fa-solid fa-fire"></i> Quente</span>';
+      if (lead.temperature === 'cold') {
+        tempBadge = '<span class="lead-badge temp-cold"><i class="fa-solid fa-snowflake"></i> Frio</span>';
       } else if (lead.temperature === 'warm') {
         tempBadge = '<span class="lead-badge temp-warm"><i class="fa-solid fa-bolt"></i> Morno</span>';
-      } else if (lead.temperature === 'cold') {
-        tempBadge = '<span class="lead-badge temp-cold"><i class="fa-solid fa-snowflake"></i> Frio</span>';
+      } else if (lead.temperature === 'hot') {
+        tempBadge = '<span class="lead-badge temp-hot"><i class="fa-solid fa-fire"></i> Quente</span>';
       }
-
       // Determine priority badge
       let priorityBadge = '';
       if (lead.priority === 'high') {
@@ -859,8 +858,8 @@ async function openLeadModal(leadId = null) {
   document.getElementById('modal-lead-source').value = 'whatsapp';
   document.getElementById('modal-lead-stage').value = 'new';
   document.getElementById('modal-lead-phone').value = '';
-  document.getElementById('modal-lead-temperature').value = 'warm';
-  document.getElementById('modal-lead-priority').value = 'medium';
+  document.getElementById('modal-lead-temperature').value = '';
+  document.getElementById('modal-lead-priority').value = '';
   document.getElementById('modal-lead-notes').value = '';
   
   const deleteBtn = document.getElementById('btn-delete-lead');
@@ -881,8 +880,8 @@ async function openLeadModal(leadId = null) {
       document.getElementById('modal-lead-source').value = lead.source || 'whatsapp';
       document.getElementById('modal-lead-stage').value = lead.stage || 'new';
       document.getElementById('modal-lead-phone').value = lead.phone || '';
-      document.getElementById('modal-lead-temperature').value = lead.temperature || 'warm';
-      document.getElementById('modal-lead-priority').value = lead.priority || 'medium';
+      document.getElementById('modal-lead-temperature').value = lead.temperature || '';
+      document.getElementById('modal-lead-priority').value = lead.priority || '';
       document.getElementById('modal-lead-notes').value = lead.custom_notes || '';
       if (deleteBtn) deleteBtn.style.display = 'block';
     }
